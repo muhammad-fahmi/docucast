@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Models\DocumentApproval;
 use App\Models\DocumentVersion;
 use App\Models\RevisionHistory;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -86,8 +87,12 @@ class DocumentController extends Controller
 
         // Ensure this user is actually the assigned reviewer
         $approval = DocumentApproval::where('document_id', $document->id)
-                                    ->where('reviewer_id', $user->id)
-                                    ->firstOrFail();
+            ->where('reviewer_id', $user->id)
+            ->firstOrFail();
+
+        if ($approval->status !== 'PENDING') {
+            throw new HttpException(409, 'This document review has already been processed.');
+        }
 
         DB::transaction(function () use ($request, $document, $approval, $latestVersion, $user) {
             if ($request->decision === 'approve') {
@@ -150,7 +155,7 @@ class DocumentController extends Controller
             $document->update(['overall_status' => 'PENDING_REVIEW']);
 
             // E. Reset the Approval Inbox for the reviewer
-            $approval = DocumentApproval::where('document_id', $document->id)->first();
+            $approval = DocumentApproval::where('document_id', $document->id)->firstOrFail();
             $approval->update([
                 'status' => 'PENDING',
                 'processed_at' => null // Reset the timestamp so it shows as "unread/unprocessed"
