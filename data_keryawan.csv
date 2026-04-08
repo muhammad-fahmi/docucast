@@ -1,0 +1,84 @@
+﻿employee_no,name,job_title,role,password,email
+22210002,Rr Titik Kristiani S,AR Admin,Finance,123456,22210002@bionicnatura.com
+22240002,Gusti Reksy Subagja,B2B & Project Staff,B2B,123456,22240002@bionicnatura.com
+22050001,Aileen Adidarma,Board Of Director,BOD,123456,22050001@bionicnatura.com
+22200022,Hendra Adidarma,Board Of Director,BOD,123456,22200022@bionicnatura.com
+22130004,Oyan Royandi,Collector,Collector,123456,22130004@bionicnatura.com
+22220011,Nisa Febriyani,Data Analyst,Data Analyst,123456,22220011@bionicnatura.com
+22240006,Kuntari Ayu Annisa,Design & Multimedia Staff,Multimedia,123456,22240006@bionicnatura.com
+22220003,Pratama Adi Nugroho,Design & Multimedia Staff,Multimedia,123456,22220003@bionicnatura.com
+22230014,Muhamad Ganda Gapar,Driver,Driver,123456,22230014@bionicnatura.com
+22220027,Munawar Fauzi,Driver,Driver,123456,22220027@bionicnatura.com
+22230013,Irwan Afriana,FG WH Operator,Warehouse FG,123456,22230013@bionicnatura.com
+22240022,Wiwit Setiyo Pamung Jadi,FG WH Operator,Warehouse FG,123456,22240022@bionicnatura.com
+22240017,Noviyanti ,Finance & Accounting Sub Department Head,Finance,123456,22240017@bionicnatura.com
+22240042,Vanessa Jesslyn,Finance & AP Admin,Finance,123456,22240042@bionicnatura.com
+22200010,Rian Anwari,GA Group Head,GA,123456,22200010@bionicnatura.com
+22230001,Gabriella Keisya Wijaya ,HR Admin,HR,123456,22230001@bionicnatura.com
+22210039,Ade Dahmir,Maintenance Staff,Maintenance,123456,22210039@bionicnatura.com
+22220017,Eduardus Indra Arie Pratama,Maintenance Staff,Maintenance,123456,22220017@bionicnatura.com
+22240023,Yandi Okidi,Maintenance Staff,Maintenance,123456,22240023@bionicnatura.com
+22240027,Galih Narendra Setyaningsunu,Maintenance Unit Head,Maintenance,123456,22240027@bionicnatura.com
+22230040,Amelia Savitri,Marketing Staff,Marketing,123456,22230040@bionicnatura.com
+22250044,Graciella Olivia Widjaja,Marketing Staff,Marketing,123456,22250044@bionicnatura.com
+22220013,Tommy Sanjaya,Modern Trade Unit Head,MT,123456,22220013@bionicnatura.com
+22200007,Nardianto,OB,OB,123456,22200007@bionicnatura.com
+22250015,Oktovianus Oe Aban,OB,OB,123456,22250015@bionicnatura.com
+22200011,Theodorus Maximus Keys,OB,OB,123456,22200011@bionicnatura.com
+22220008,Melani Magdalena Hutabarat ,PPIC Unit Head,PPIC,123456,22220008@bionicnatura.com
+22150011,Suranto,Production Group Head,Production,123456,22150011@bionicnatura.com
+22110002,Suprianto ,Production Group Head,Production,123456,22110002@bionicnatura.com
+22210023,Ahmad Sanjaya,Production Operator,Production,123456,22210023@bionicnatura.com
+22250031,Aldi Ardiansyah,Production Operator,Production,123456,22250031@bionicnatura.com
+22250041,Alif Lantip Timur Wicaksono,Production Operator,Production,123456,22250041@bionicnatura.com
+22240034,Anang Sukana,Production Operator,Production,123456,22240034@bionicnatura.com
+22230010,Anang Tegar Satriansyah,Production Operator,Production,123456,22230010@bionicnatura.com
+22240024,Arya Dermawan,Production Operator,Production,123456,22240024@bionicnatura.com
+22240037,Asep Ilham Munajat,Production Operator,Production,123456,22240037@bionicnatura.com
+22150009,Darussalam,Production Operator,Production,123456,22150009@bionicnatura.com
+22250013,David Arief Fauji,Production Operator,Production,123456,22250013@bionicnatura.com
+22250008,Dizki Wardiana Birthday Today,Production Operator,Production,123456,22250008@bionicnatura.com
+22250022,Ervin Dwi Riswanto,Production Operator,Production,123456,22250022@bionicnatura.com
+22250004,Ferdiansyah,Production Operator,Production,123456,22250004@bionicnatura.com
+22250035,Jalil Rudianto,Production Operator,Production,123456,22250035@bionicnatura.com
+22240033,Luthfie Najiullah,Production Operator,Production,123456,22240033@bionicnatura.com
+22240045,M Salman Alfarisy As,Production Operator,Production,123456,22240045@bionicnatura.com
+22230039,Maulana Sangkannudin,Production Operator,Production,123456,22230039@bionicnatura.com
+22250027,Muhamad Erik,Production Operator,Production,123456,22250027@bionicnatura.com
+22210037,Muhamad Faozi,Production Operator,Production,123456,22210037@bionicnatura.com
+22240010,Muhammad Bagas Saputra,Production Operator,Production,123456,22240010@bionicnatura.com
+22230023,Muhammad Muchlis,Production Operator,Production,123456,22230023@bionicnatura.com
+22250046,Muhammad Ryan Fauzi,Production Operator,Production,123456,22250046@bionicnatura.com
+22200008,Parsinah ,Production Operator,Production,123456,22200008@bionicnatura.com
+22240011,Reynesta Eka Prayuga,Production Operator,Production,123456,22240011@bionicnatura.com
+22230034,Sidik Pratama,Production Operator,Production,123456,22230034@bionicnatura.com
+22200009,Siti Suniarti ,Production Operator,Production,123456,22200009@bionicnatura.com
+22250025,Suhandi,Production Operator,Production,123456,22250025@bionicnatura.com
+22170018,Wahid,Production Operator,Production,123456,22170018@bionicnatura.com
+22230037,Wisnu Budi Saputro,Production Operator,Production,123456,22230037@bionicnatura.com
+22240007,Cahyo Sulistio Prabowo ,Production Unit Head,Production,123456,22240007@bionicnatura.com
+22220018,Heriman,Purchasing Staff,Purchasing,123456,22220018@bionicnatura.com
+22250001,Endricko Novanthio Suwandi ,Purchasing Unit Head,Purchasing,123456,22250001@bionicnatura.com
+22220015,Winanda Masruroh,QA Downstream Staff,QA,123456,22220015@bionicnatura.com
+22250050,Ni made Pradnya Tara Diva ,QA Upstream Staff,QA,123456,22250050@bionicnatura.com
+22230003,Iqva Karrisa Ninggar,QC Analyst,QC,123456,22230003@bionicnatura.com
+22220005,Suryono,QC Group Head,QC,123456,22220005@bionicnatura.com
+22250017,Angelica Zahra Putriraya,QC Laboran,QC,123456,22250017@bionicnatura.com
+22220025,Fita ,QC Laboran,QC,123456,22220025@bionicnatura.com
+22250016,Valentino Sambo Adi Wisesa,QC Laboran,QC,123456,22250016@bionicnatura.com
+22250020,Ajeng dwie Azhari,R & D Staff,RnD,123456,22250020@bionicnatura.com
+22250011,Emanuel Dionisius Punthadewa,R & D Staff,RnD,123456,22250011@bionicnatura.com
+22240026,Helena Ivana,R & D Staff,RnD,123456,22240026@bionicnatura.com
+22230002,Nada Durul Khomsyi,R & D Staff,RnD,123456,22230002@bionicnatura.com
+22150006,Prasongko ,R & Q Department Head,QA,123456,22150006@bionicnatura.com
+22220010,Hasnan Nurrohman,RM WH Group Head,Warehouse RM,123456,22220010@bionicnatura.com
+22230007,Sigit Septiadi,RM WH Operator,Warehouse RM,123456,22230007@bionicnatura.com
+22210030,Yonathan,Sales & Marketing Department Head,Sales,123456,22210030@bionicnatura.com
+22240025,Ananda Riyandari Gigis Rengganis,Sales & Merchandiser,Sales,123456,22240025@bionicnatura.com
+22260001,Gaty Putri Octavianty,Sales & Merchandiser,Sales,123456,22260001@bionicnatura.com
+22250051,Maria Ulfa,Sales & Merchandiser,Sales,123456,22250051@bionicnatura.com
+22240016,Nova Selviani,Sales & Merchandiser,Sales,123456,22240016@bionicnatura.com
+22230029,Nurlida Fitria,Sales & Merchandiser,Sales,123456,22230029@bionicnatura.com
+22230035,Putri Puspitasari,Sales & Merchandiser,Sales,123456,22230035@bionicnatura.com
+22100004,Ridoasih Gultom ,Sales Admin,Sales,123456,22100004@bionicnatura.com
+22160014,Yandi,Warehouse & Logistic Group Head,Warehouse Logistic,123456,22160014@bionicnatura.com
