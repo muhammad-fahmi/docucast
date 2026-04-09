@@ -49,9 +49,9 @@ RUN composer run-script post-autoload-dump && rm .env
 
 # Build-time arguments for Vite frontend bundle (baked into JS at build time)
 ARG VITE_REVERB_APP_KEY=docucast-app-key
-ARG VITE_REVERB_HOST=localhost
-ARG VITE_REVERB_PORT=8080
-ARG VITE_REVERB_SCHEME=http
+ARG VITE_REVERB_HOST=docucast.bionic-natura.cloud
+ARG VITE_REVERB_PORT=443
+ARG VITE_REVERB_SCHEME=https
 
 # Create .env with Vite variables so they are baked into the JS bundle
 RUN printf 'VITE_REVERB_APP_KEY=%s\nVITE_REVERB_HOST=%s\nVITE_REVERB_PORT=%s\nVITE_REVERB_SCHEME=%s\n' \

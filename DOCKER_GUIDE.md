@@ -6,8 +6,8 @@ This document replaces the previous Docker quickstart, setup, and production dep
 
 DocuCast runs as a multi-service Docker Compose stack:
 
-- `app`: Laravel web app served through Nginx and PHP-FPM on port `80`
-- `reverb`: Laravel Reverb WebSocket server on port `8080`
+- `app`: Laravel web app served through Nginx and PHP-FPM behind Traefik
+- `reverb`: Laravel Reverb WebSocket server behind Traefik on the same public host, routed on `/app` and `/apps`
 - `queue`: Horizon worker, or `queue:work` when Horizon is unavailable
 - `postgres`: PostgreSQL 16 database
 - `redis`: Redis cache, session, and queue backend
@@ -25,22 +25,33 @@ The image is built from the local `Dockerfile` and reused by the `app`, `reverb`
 ### 1. Prepare environment
 
 ```bash
-cp .env.docker .env.production
+cp .env.docker .env
 ```
 
-Update `.env.production` before starting the stack:
+Update `.env` before starting the stack:
 
 - set `APP_KEY`
-- review `APP_URL`
+- review `APP_URL`, `TRAEFIK_HOST`, and `REVERB_HOST`
+- keep service ports on their internal defaults: `DB_PORT=5432`, `REDIS_PORT=6379`
+- make sure the external Traefik network in `TRAEFIK_NETWORK` already exists on the server
+- choose `TRAEFIK_ENTRYPOINTS=web` or `websecure` and set `TRAEFIK_TLS` accordingly
 - change database credentials if needed
 - configure mail settings for your environment
-- review Reverb settings if you will access it outside localhost
+- review Reverb settings so the browser uses the Traefik endpoint instead of a direct container port
+
+If you prefer to keep a separate file such as `.env.production`, start Compose with `docker-compose --env-file .env.production ...`. The helper script and the plain `docker-compose` commands in this guide use `.env` by default.
 
 ### 2. Build and start services
 
 ```bash
 docker-compose build
 docker-compose up -d
+```
+
+If the Traefik network does not exist yet:
+
+```bash
+docker network create traefik
 ```
 
 ### 3. Initialize the database
@@ -57,10 +68,10 @@ docker-compose exec -T app php artisan db:seed
 
 ### 4. Access services
 
-- Web app: `http://localhost`
-- Reverb: `http://localhost:8080`
-- PostgreSQL: `localhost:5432`
-- Redis: `localhost:6379`
+- Web app: `http(s)://your configured TRAEFIK_HOST`
+- Reverb WebSocket: proxied by Traefik on the same public host using the `/app` and `/apps` paths
+- PostgreSQL: internal-only, reachable only from containers on the Docker network
+- Redis: internal-only, reachable only from containers on the Docker network
 
 ## Useful Commands
 
@@ -107,7 +118,8 @@ For production, keep these points in mind:
 - set `APP_ENV=production` and `APP_DEBUG=false`
 - use strong PostgreSQL and Redis credentials
 - terminate TLS at a reverse proxy such as Nginx or Traefik
-- expose only the ports you actually need
+- keep PostgreSQL and Redis internal-only unless you explicitly need external admin access
+- route the web app and Reverb through Traefik instead of publishing container ports directly
 - persist database and application volumes
 - back up PostgreSQL regularly
 - pull and redeploy the image when publishing a new version
@@ -121,7 +133,7 @@ docker-compose up -d
 docker-compose exec -T app php artisan migrate --force
 ```
 
-If you run behind a reverse proxy, make sure `APP_URL`, `REVERB_HOST`, `REVERB_PORT`, and `REVERB_SCHEME` match the public endpoint.
+If you run behind Traefik, make sure `APP_URL`, `TRAEFIK_HOST`, `REVERB_HOST`, `REVERB_PORT`, and `REVERB_SCHEME` match the public endpoint seen by the browser.
 
 ## Troubleshooting
 

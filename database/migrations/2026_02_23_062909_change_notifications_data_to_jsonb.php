@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('notifications')) {
+            return;
+        }
+
         // We use a raw statement because changing types in Postgres
         // from text to jsonb requires an explicit 'USING' cast.
         DB::statement('ALTER TABLE notifications ALTER COLUMN data TYPE jsonb USING data::jsonb');
@@ -21,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('notifications')) {
+            return;
+        }
+
         DB::statement('ALTER TABLE notifications ALTER COLUMN data TYPE text USING data::text');
     }
 };

@@ -28,7 +28,6 @@ docker-build*.log
 .claude
 .mcp.json
 .opencode
-data_keryawan.csv
 README.md
 CLAUDE.md
 AGENTS.md
