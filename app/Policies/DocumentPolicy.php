@@ -4,67 +4,28 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Document;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
-class DocumentPolicy
+class DocumentPolicy extends BaseResourcePolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(AuthUser $authUser): bool
+    protected function modelName(): string
     {
-        return $authUser->can('ViewAny:Document');
-    }
-
-    public function view(AuthUser $authUser, Document $document): bool
-    {
-        return $authUser->can('View:Document');
-    }
-
-    public function create(AuthUser $authUser): bool
-    {
-        return $authUser->can('Create:Document');
-    }
-
-    public function update(AuthUser $authUser, Document $document): bool
-    {
-        return $authUser->can('Update:Document');
-    }
-
-    public function delete(AuthUser $authUser, Document $document): bool
-    {
-        return $authUser->can('Delete:Document');
-    }
-
-    public function restore(AuthUser $authUser, Document $document): bool
-    {
-        return $authUser->can('Restore:Document');
-    }
-
-    public function forceDelete(AuthUser $authUser, Document $document): bool
-    {
-        return $authUser->can('ForceDelete:Document');
-    }
-
-    public function forceDeleteAny(AuthUser $authUser): bool
-    {
-        return $authUser->can('ForceDeleteAny:Document');
+        return 'Document';
     }
 
     public function restoreAny(AuthUser $authUser): bool
     {
-        return $authUser->can('RestoreAny:Document');
+        return $authUser->can($this->permissionName('RestoreAny'));
     }
 
     public function replicate(AuthUser $authUser, Document $document): bool
     {
-        return $authUser->can('Replicate:Document');
+        return $authUser->can($this->permissionName('Replicate'));
     }
 
     public function reorder(AuthUser $authUser): bool
     {
-        return $authUser->can('Reorder:Document');
+        return $authUser->can($this->permissionName('Reorder'));
     }
-
 }

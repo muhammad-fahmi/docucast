@@ -17,13 +17,21 @@ return new class extends Migration {
         $connection = DB::getDriverName();
 
         if ($connection === 'pgsql') {
-            DB::statement("ALTER TABLE notifications ALTER COLUMN data TYPE json USING data::json");
+            DB::statement('ALTER TABLE notifications ALTER COLUMN data TYPE json USING data::json');
 
             return;
         }
 
         if ($connection === 'mysql') {
             DB::statement('ALTER TABLE notifications MODIFY data JSON');
+
+            return;
+        }
+
+        // SQLite doesn't require migration - JSON is handled at application level
+        if ($connection === 'sqlite') {
+            // No action needed for SQLite
+            return;
         }
     }
 
@@ -46,6 +54,14 @@ return new class extends Migration {
 
         if ($connection === 'mysql') {
             DB::statement('ALTER TABLE notifications MODIFY data LONGTEXT');
+
+            return;
+        }
+
+        // SQLite doesn't require migration
+        if ($connection === 'sqlite') {
+            // No action needed for SQLite
+            return;
         }
     }
 };

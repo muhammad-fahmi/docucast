@@ -11,12 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('documents')) {
+            return;
+        }
+
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->foreignId('initiator_id')->constrained('users')->onDelete('cascade');
-            // e.g., DRAFT, PENDING_REVIEW, NEEDS_REVISION, APPROVED
-            $table->string('overall_status', 50)->default('DRAFT');
+            $table->text('description')->nullable();
+            $table->string('file_path')->nullable();
+            $table->string('file_name')->nullable();
+            $table->foreignId('uploader_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->enum('status', ['pending', 'in_review', 'approved'])->default('pending');
             $table->timestamps();
         });
     }

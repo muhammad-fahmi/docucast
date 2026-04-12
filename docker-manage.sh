@@ -29,12 +29,71 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+detect_environment() {
+    # Explicit override via env var always wins
+    if [ -n "${DOCKER_ENV:-}" ]; then
+        echo "$DOCKER_ENV"
+        return
+    fi
+
+    # CI / server-like contexts default to hostinger
+    if [ "${CI:-}" = "true" ] || [ -n "${GITHUB_ACTIONS:-}" ] || [ "${HOSTINGER_DOCKER_MANAGER:-}" = "true" ] || [ "${HOSTINGER:-}" = "true" ]; then
+        echo "hostinger"
+        return
+    fi
+
+    # Developer machines default to local
+    echo "local"
+}
+
+ENVIRONMENT="$(detect_environment)"
+
+# Manual CLI override
+if [ "${1:-}" = "--env" ] || [ "${1:-}" = "-e" ]; then
+    if [ -z "${2:-}" ]; then
+        echo "Missing environment after $1. Use: local or hostinger"
+        exit 1
+    fi
+
+    ENVIRONMENT="$2"
+    shift 2
+fi
+
+case "$ENVIRONMENT" in
+    local)
+        COMPOSE_FILE="docker-compose.local.yml"
+        ENV_FILE=".env"
+        IMAGE_TAG="docucast:local"
+        ;;
+    hostinger)
+        COMPOSE_FILE="docker-compose.hostinger.yml"
+        ENV_FILE=".env.production"
+        IMAGE_TAG="docucast:hostinger"
+        ;;
+    *)
+        echo "Invalid environment: $ENVIRONMENT. Valid values: local, hostinger"
+        exit 1
+        ;;
+esac
+
+docker_compose() {
+    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" "$@"
+}
+
 # Available commands
 show_help() {
     cat << EOF
 DocuCast Docker Management Script
 
-Usage: ./docker-manage.sh <command> [options]
+Usage: ./docker-manage.sh [--env local|hostinger] <command> [options]
+
+Environment selection:
+    Auto-detect default:
+      - hostinger on CI/server contexts
+      - local on developer machines
+    Manual override:
+      --env hostinger
+      --env local
 
 Commands:
     build               Build the Docker image
@@ -60,68 +119,73 @@ Commands:
     help                Show this help message
 
 Examples:
-    ./docker-manage.sh build
     ./docker-manage.sh up
-    ./docker-manage.sh migrate
-    ./docker-manage.sh artisan make:model Post
-    ./docker-manage.sh push myregistry/docucast:1.0.0
-    ./docker-manage.sh db-backup
-    ./docker-manage.sh logs app
+    ./docker-manage.sh --env local build
+    ./docker-manage.sh --env local up
+    ./docker-manage.sh --env hostinger up
+    ./docker-manage.sh --env hostinger migrate
+    ./docker-manage.sh --env local logs app
 
 EOF
 }
 
 # Commands implementation
 cmd_build() {
-    log_info "Building Docker image..."
-    docker-compose build
+    log_info "Building Docker image for environment: $ENVIRONMENT"
+    docker_compose build
     log_success "Docker image built successfully"
 }
 
 cmd_up() {
-    log_info "Starting services..."
-    docker-compose up -d
+    log_info "Starting services for environment: $ENVIRONMENT"
+    docker_compose up -d
     sleep 5
     log_success "Services started"
-    log_info "Web App: http://localhost"
-    log_info "Reverb: http://localhost:8080"
+
+    if [ "$ENVIRONMENT" = "local" ]; then
+        log_info "Web App: http://localhost:8090"
+        log_info "Reverb (proxied): http://localhost:8090/app"
+    else
+        log_info "Web App: https://docucast.bionic-natura.cloud"
+        log_info "Reverb (proxied): https://docucast.bionic-natura.cloud/app"
+    fi
 }
 
 cmd_down() {
-    log_info "Stopping services..."
-    docker-compose down
+    log_info "Stopping services for environment: $ENVIRONMENT"
+    docker_compose down
     log_success "Services stopped"
 }
 
 cmd_logs() {
     SERVICE=${2:-''}
     if [ -z "$SERVICE" ]; then
-        docker-compose logs -f
+        docker_compose logs -f
     else
-        docker-compose logs -f "$SERVICE"
+        docker_compose logs -f "$SERVICE"
     fi
 }
 
 cmd_migrate() {
     log_info "Running database migrations..."
-    docker-compose exec -T app php artisan migrate --force
+    docker_compose exec -T app php artisan migrate --force
     log_success "Migrations completed"
 }
 
 cmd_seed() {
     log_info "Seeding database..."
-    docker-compose exec -T app php artisan db:seed
+    docker_compose exec -T app php artisan db:seed
     log_success "Database seeded"
 }
 
 cmd_shell() {
     log_info "Opening bash shell in app container..."
-    docker-compose exec app bash
+    docker_compose exec app bash
 }
 
 cmd_tinker() {
     log_info "Opening Laravel Tinker..."
-    docker-compose exec app php artisan tinker
+    docker_compose exec app php artisan tinker
 }
 
 cmd_artisan() {
@@ -130,24 +194,26 @@ cmd_artisan() {
         log_error "Please provide an artisan command"
         exit 1
     fi
-    docker-compose exec app php artisan $COMMAND
+    docker_compose exec app php artisan $COMMAND
 }
 
 cmd_ps() {
-    docker-compose ps
+    docker_compose ps
 }
 
 cmd_status() {
     log_info "Checking service health..."
-    docker-compose ps --format "table {{.Service}}\t{{.Status}}"
+    docker_compose ps --format "table {{.Service}}\t{{.Status}}"
 }
 
 cmd_db_backup() {
     TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
     BACKUP_FILE="database_backup_${TIMESTAMP}.sql"
+    DB_USER="${DB_USERNAME:-postgres}"
+    DB_NAME="${DB_DATABASE:-docucast}"
 
     log_info "Backing up PostgreSQL database to $BACKUP_FILE..."
-    docker-compose exec -T postgres pg_dump -U root docucast > "$BACKUP_FILE"
+    docker_compose exec -T postgres pg_dump -U "$DB_USER" "$DB_NAME" > "$BACKUP_FILE"
 
     if [ -f "$BACKUP_FILE" ]; then
         log_success "Database backed up to $BACKUP_FILE"
@@ -160,6 +226,8 @@ cmd_db_backup() {
 
 cmd_db_restore() {
     BACKUP_FILE=$2
+    DB_USER="${DB_USERNAME:-postgres}"
+    DB_NAME="${DB_DATABASE:-docucast}"
 
     if [ -z "$BACKUP_FILE" ] || [ ! -f "$BACKUP_FILE" ]; then
         log_error "Please provide a valid backup file path"
@@ -171,7 +239,7 @@ cmd_db_restore() {
 
     if [ "$CONFIRM" = "yes" ]; then
         log_info "Restoring database..."
-        docker-compose exec -T postgres psql -U root docucast < "$BACKUP_FILE"
+        docker_compose exec -T postgres psql -U "$DB_USER" "$DB_NAME" < "$BACKUP_FILE"
         log_success "Database restored"
     else
         log_info "Restore cancelled"
@@ -200,16 +268,18 @@ cmd_clean() {
 
     if [ "$CONFIRM" = "yes" ]; then
         log_info "Removing containers..."
-        docker-compose down -v
+        docker_compose down -v
 
         log_info "Removing images..."
-        docker rmi docucast:latest
+        docker rmi "$IMAGE_TAG"
 
         log_success "Cleanup completed"
     else
         log_info "Cleanup cancelled"
     fi
 }
+
+log_info "Using environment profile: $ENVIRONMENT"
 
 # Main command router
 COMMAND=${1:-'help'}

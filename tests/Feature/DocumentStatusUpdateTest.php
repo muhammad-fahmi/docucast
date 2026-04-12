@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
+use App\Services\DocumentStatusService;
+use App\Services\DocumentReviewAuthorizationService;
 
 it('marks document approved only when all recipients approved', function (): void {
     $uploader = User::factory()->create();
@@ -34,7 +36,7 @@ it('marks document approved only when all recipients approved', function (): voi
         ],
     ], ['document_id', 'user_id'], ['status', 'message', 'updated_at']);
 
-    $document->updateStatusBasedOnReviews();
+    app(DocumentStatusService::class)->updateStatus($document);
 
     expect($document->fresh()->status)->toBe('in_review');
 
@@ -49,7 +51,7 @@ it('marks document approved only when all recipients approved', function (): voi
         ],
     ], ['document_id', 'user_id'], ['status', 'message', 'updated_at']);
 
-    $document->updateStatusBasedOnReviews();
+    app(DocumentStatusService::class)->updateStatus($document);
 
     expect($document->fresh()->status)->toBe('approved');
 });
@@ -69,8 +71,7 @@ it('marks document pending when recipients are removed', function (): void {
 
     $document->recipients()->sync([$recipient->id]);
     $document->recipients()->sync([]);
-
-    $document->updateStatusBasedOnReviews();
+    app(DocumentStatusService::class)->updateStatus($document);
 
     expect($document->fresh()->status)->toBe('pending');
 });
@@ -135,7 +136,7 @@ it('blocks recipient from reviewing again after approving', function (): void {
         'message' => null,
     ]);
 
-    expect($document->canRecipientSubmitReview($recipient))->toBeFalse();
+    expect(app(DocumentReviewAuthorizationService::class)->canUserSubmitReview($document, $recipient))->toBeFalse();
 });
 
 it('allows recipient to review again after uploader reopens recipient review', function (): void {
@@ -160,9 +161,9 @@ it('allows recipient to review again after uploader reopens recipient review', f
         'message' => null,
     ]);
 
-    $document->allowRecipientToReviewAgain($recipient->id);
+    app(DocumentReviewAuthorizationService::class)->allowReviewAgain($document, $recipient->id);
 
-    expect($document->fresh()->canRecipientSubmitReview($recipient))->toBeTrue();
+    expect(app(DocumentReviewAuthorizationService::class)->canUserSubmitReview($document->fresh(), $recipient))->toBeTrue();
     expect(DocumentReview::query()->where('document_id', $document->id)->where('user_id', $recipient->id)->exists())->toBeFalse();
     expect($document->fresh()->status)->toBe('in_review');
 });

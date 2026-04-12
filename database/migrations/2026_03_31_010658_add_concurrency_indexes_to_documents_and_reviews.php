@@ -10,19 +10,40 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('documents', function (Blueprint $table): void {
-            $table->index('uploader_id');
-            $table->index('status');
-            $table->index(['uploader_id', 'status']);
-        });
+        // Add indexes to documents table if columns exist
+        if (
+            Schema::hasTable('documents') &&
+            Schema::hasColumn('documents', 'uploader_id') &&
+            Schema::hasColumn('documents', 'status')
+        ) {
+            Schema::table('documents', function (Blueprint $table): void {
+                $table->index('uploader_id');
+                $table->index('status');
+                $table->index(['uploader_id', 'status']);
+            });
+        }
 
-        Schema::table('document_recipients', function (Blueprint $table): void {
-            $table->index(['user_id', 'document_id']);
-        });
+        // Add indexes to document_recipients table
+        if (
+            Schema::hasTable('document_recipients') &&
+            Schema::hasColumn('document_recipients', 'user_id') &&
+            Schema::hasColumn('document_recipients', 'document_id')
+        ) {
+            Schema::table('document_recipients', function (Blueprint $table): void {
+                $table->index(['user_id', 'document_id']);
+            });
+        }
 
-        Schema::table('document_reviews', function (Blueprint $table): void {
-            $table->index(['document_id', 'status']);
-        });
+        // Add indexes to document_reviews table
+        if (
+            Schema::hasTable('document_reviews') &&
+            Schema::hasColumn('document_reviews', 'document_id') &&
+            Schema::hasColumn('document_reviews', 'status')
+        ) {
+            Schema::table('document_reviews', function (Blueprint $table): void {
+                $table->index(['document_id', 'status']);
+            });
+        }
     }
 
     /**
