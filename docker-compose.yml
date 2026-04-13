@@ -48,7 +48,7 @@ services:
     restart: always
     working_dir: /app
     env_file:
-      - .env.production
+      - .env
     environment:
       APP_URL: https://docucast.bionic-natura.cloud
       DB_HOST: postgres
@@ -79,8 +79,6 @@ services:
     <<: *docucast-image
     restart: always
     working_dir: /app
-    ports:
-      - "80:80"
     env_file:
       - .env
     environment:
