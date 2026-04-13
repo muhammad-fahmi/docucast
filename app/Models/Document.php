@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\DocumentReviewAuthorizationService;
+use App\Services\DocumentStatusService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -58,11 +60,21 @@ class Document extends Model
         return $this->hasMany(DocumentVersion::class);
     }
 
-    /**
-     * REMOVED: updateStatusBasedOnReviews() - Use DocumentStatusService
-     * REMOVED: canRecipientSubmitReview() - Use DocumentReviewAuthorizationService
-     * REMOVED: allowRecipientToReviewAgain() - Use DocumentReviewAuthorizationService
-     */
+    public function updateStatusBasedOnReviews(): void
+    {
+        app(DocumentStatusService::class)->updateStatus($this);
+    }
+
+    public function canRecipientSubmitReview(User $user): bool
+    {
+        return app(DocumentReviewAuthorizationService::class)->canUserSubmitReview($this, $user);
+    }
+
+    public function allowRecipientToReviewAgain(int $recipientId): void
+    {
+        app(DocumentReviewAuthorizationService::class)->allowReviewAgain($this, $recipientId);
+    }
+
     public static function formatUniqueCode(int $uploaderId, string $datePart, int $documentId): string
     {
         return sprintf('#%d%s%06d', $uploaderId, $datePart, $documentId);

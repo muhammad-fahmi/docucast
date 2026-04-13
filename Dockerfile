@@ -1,8 +1,11 @@
-FROM php:8.4-fpm-alpine as builder
+FROM php:8.4-fpm-alpine AS builder
 
 WORKDIR /app
 
-RUN apk add --no-cache \
+RUN set -eux; \
+    apk update; \
+    for attempt in 1 2 3; do \
+    apk add --no-cache \
     build-base \
     libpng-dev \
     libjpeg-turbo-dev \
@@ -13,9 +16,11 @@ RUN apk add --no-cache \
     git \
     curl \
     unzip \
-    nodejs \
-    npm \
-    oniguruma-dev
+    oniguruma-dev && break; \
+    if [ "$attempt" -eq 3 ]; then exit 1; fi; \
+    apk update; \
+    done; \
+    apk add --no-cache nodejs npm || apk add --no-cache nodejs-current npm
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
     pecl install redis && \
