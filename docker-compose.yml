@@ -78,16 +78,16 @@ services:
         condition: service_healthy
     networks:
       - prod-network
-      # - traefik
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.docker.network=traefik_default"
-    #   - "traefik.http.routers.docucast-app.rule=Host(`docucast.bionic-natura.cloud`)"
-    #   - "traefik.http.routers.docucast-app.entrypoints=websecure"
-    #   - "traefik.http.routers.docucast-app.tls=true"
-    #   - "traefik.http.routers.docucast-app.service=docucast-app"
-    #   - "traefik.http.routers.docucast-app.priority=10"
-    #   - "traefik.http.services.docucast-app.loadbalancer.server.port=80"
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_default"
+      - "traefik.http.routers.docucast-app.rule=Host(`docucast.bionic-natura.cloud`)"
+      - "traefik.http.routers.docucast-app.entrypoints=websecure"
+      - "traefik.http.routers.docucast-app.tls=true"
+      - "traefik.http.routers.docucast-app.service=docucast-app"
+      - "traefik.http.routers.docucast-app.priority=10"
+      - "traefik.http.services.docucast-app.loadbalancer.server.port=80"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
@@ -118,7 +118,7 @@ services:
         condition: service_healthy
     networks:
       - prod-network
-      # - traefik
+    #   - traefik
     # labels:
     #   - "traefik.enable=true"
     #   - "traefik.docker.network=traefik_default"
@@ -175,9 +175,9 @@ services:
 networks:
   prod-network:
     driver: bridge
-  # traefik:
-  #   external: true
-  #   name: traefik_default
+  traefik:
+    external: true
+    name: traefik_default
 
 volumes:
   postgres_data:
