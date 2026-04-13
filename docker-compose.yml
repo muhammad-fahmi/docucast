@@ -160,6 +160,9 @@ services:
 networks:
   app-network:
     driver: bridge
+  traefik:
+    external: true
+    
 
 volumes:
   postgres_data:
