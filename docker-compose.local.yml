@@ -1,61 +1,76 @@
+x-docucast-image: &docucast-image
+  build:
+    context: .
+    dockerfile: Dockerfile.local
+    args:
+      VITE_REVERB_APP_KEY: ${REVERB_APP_KEY:-docucast-app-key}
+      VITE_REVERB_HOST: localhost
+      VITE_REVERB_PORT: 8090
+      VITE_REVERB_SCHEME: http
+  image: docucast:local
+
 services:
   postgres:
     image: postgres:16-alpine
+    container_name: docucast-local-postgres
     environment:
       POSTGRES_DB: ${DB_DATABASE:?DB_DATABASE is required}
       POSTGRES_USER: ${DB_USERNAME:?DB_USERNAME is required}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       POSTGRES_INITDB_ARGS: "--locale=C --encoding=UTF8"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_local_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:?DB_USERNAME is required}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - app-network
+      - local-network
     restart: unless-stopped
 
   redis:
     image: redis:7-alpine
+    container_name: docucast-local-redis
     command: redis-server --appendonly yes
     volumes:
-      - redis_data:/data
+      - redis_local_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - app-network
+      - local-network
     restart: unless-stopped
 
   reverb:
-    image: 1808561084/docucast:latest
+    <<: *docucast-image
+    container_name: docucast-local-reverb
     command: reverb
     restart: always
     working_dir: /app
     env_file:
       - .env
     environment:
-      APP_URL: https://docucast.bionic-natura.cloud
+      APP_URL: http://localhost:8090
       DB_HOST: postgres
       DB_PORT: 5432
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REVERB_SERVER_HOST: 0.0.0.0
       REVERB_SERVER_PORT: 8080
-      REVERB_HOST: docucast.bionic-natura.cloud
-      REVERB_PORT: 443
-      REVERB_SCHEME: https
+      REVERB_HOST: localhost
+      REVERB_PORT: 8090
+      REVERB_SCHEME: http
+      SESSION_SECURE_COOKIES: false
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     networks:
-      - app-network
+      - local-network
     healthcheck:
       test:
         ["CMD-SHELL", 'php -r ''exit(@fsockopen("127.0.0.1", 8080) ? 0 : 1);''']
@@ -65,24 +80,27 @@ services:
       start_period: 30s
 
   app:
-    image: 1808561084/docucast:latest
+    <<: *docucast-image
+    container_name: docucast-local-app
     restart: always
     working_dir: /app
+    ports:
+      - "8090:80"
     env_file:
       - .env
     environment:
-      APP_URL: https://docucast.bionic-natura.cloud
+      APP_URL: http://localhost:8090
       DB_HOST: postgres
       DB_PORT: 5432
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REVERB_HOST: docucast.bionic-natura.cloud
-      REVERB_PORT: 443
-      REVERB_SCHEME: https
-      SESSION_SECURE_COOKIES: true
+      REVERB_HOST: localhost
+      REVERB_PORT: 8090
+      REVERB_SCHEME: http
+      SESSION_SECURE_COOKIES: false
     volumes:
-      - app_bootstrap:/app/bootstrap
-      - app_storage:/app/storage
+      - app_local_bootstrap:/app/bootstrap
+      - app_local_storage:/app/storage
     depends_on:
       postgres:
         condition: service_healthy
@@ -91,17 +109,7 @@ services:
       reverb:
         condition: service_started
     networks:
-      - app-network
-      - traefik
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik_default"
-      - "traefik.http.routers.docucast-app.rule=Host(`docucast.bionic-natura.cloud`)"
-      - "traefik.http.routers.docucast-app.entrypoints=websecure"
-      - "traefik.http.routers.docucast-app.tls=true"
-      - "traefik.http.routers.docucast-app.service=docucast-app"
-      - "traefik.http.routers.docucast-app.priority=10"
-      - "traefik.http.services.docucast-app.loadbalancer.server.port=80"
+      - local-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
@@ -110,28 +118,30 @@ services:
       start_period: 40s
 
   queue:
-    image: 1808561084/docucast:latest
+    <<: *docucast-image
+    container_name: docucast-local-queue
     command: queue
     restart: always
     working_dir: /app
     env_file:
       - .env
     environment:
-      APP_URL: https://docucast.bionic-natura.cloud
+      APP_URL: http://localhost:8090
       DB_HOST: postgres
       DB_PORT: 5432
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REVERB_HOST: docucast.bionic-natura.cloud
-      REVERB_PORT: 443
-      REVERB_SCHEME: https
+      REVERB_HOST: localhost
+      REVERB_PORT: 8090
+      REVERB_SCHEME: http
+      SESSION_SECURE_COOKIES: false
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     networks:
-      - app-network
+      - local-network
     healthcheck:
       test:
         [
@@ -144,15 +154,11 @@ services:
       start_period: 30s
 
 networks:
-  app-network:
+  local-network:
     driver: bridge
-  traefik:
-    external: true
-    name: traefik_default
-
 
 volumes:
-  postgres_data:
-  redis_data:
-  app_bootstrap:
-  app_storage:
+  postgres_local_data:
+  redis_local_data:
+  app_local_bootstrap:
+  app_local_storage:

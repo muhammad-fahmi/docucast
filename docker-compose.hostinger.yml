@@ -1,3 +1,14 @@
+x-docucast-image: &docucast-image
+  build:
+    context: .
+    dockerfile: Dockerfile.hostinger
+    args:
+      VITE_REVERB_APP_KEY: ${REVERB_APP_KEY:-docucast-app-key}
+      VITE_REVERB_HOST: docucast.bionic-natura.cloud
+      VITE_REVERB_PORT: 443
+      VITE_REVERB_SCHEME: https
+  image: docucast:hostinger
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -32,12 +43,12 @@ services:
     restart: unless-stopped
 
   reverb:
-    image: 1808561084/docucast:latest
+    <<: *docucast-image
     command: reverb
     restart: always
     working_dir: /app
     env_file:
-      - .env
+      - .env.production
     environment:
       APP_URL: https://docucast.bionic-natura.cloud
       DB_HOST: postgres
@@ -65,11 +76,13 @@ services:
       start_period: 30s
 
   app:
-    image: 1808561084/docucast:latest
+    <<: *docucast-image
     restart: always
     working_dir: /app
+    ports:
+      - "80:80"
     env_file:
-      - .env
+      - .env.production
     environment:
       APP_URL: https://docucast.bionic-natura.cloud
       DB_HOST: postgres
@@ -80,6 +93,7 @@ services:
       REVERB_PORT: 443
       REVERB_SCHEME: https
       SESSION_SECURE_COOKIES: true
+
     volumes:
       - app_bootstrap:/app/bootstrap
       - app_storage:/app/storage
@@ -110,12 +124,12 @@ services:
       start_period: 40s
 
   queue:
-    image: 1808561084/docucast:latest
+    <<: *docucast-image
     command: queue
     restart: always
     working_dir: /app
     env_file:
-      - .env
+      - .env.production
     environment:
       APP_URL: https://docucast.bionic-natura.cloud
       DB_HOST: postgres
@@ -146,10 +160,6 @@ services:
 networks:
   app-network:
     driver: bridge
-  traefik:
-    external: true
-    name: traefik_default
-
 
 volumes:
   postgres_data:
