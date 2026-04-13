@@ -1,13 +1,13 @@
 x-docucast-image: &docucast-image
   build:
     context: .
-    dockerfile: Dockerfile.hostinger
+    dockerfile: Dockerfile
     args:
       VITE_REVERB_APP_KEY: ${REVERB_APP_KEY:-docucast-app-key}
       VITE_REVERB_HOST: docucast.bionic-natura.cloud
       VITE_REVERB_PORT: 443
       VITE_REVERB_SCHEME: https
-  image: docucast:hostinger
+  image: docucast
 
 services:
   postgres:
@@ -82,7 +82,7 @@ services:
     ports:
       - "80:80"
     env_file:
-      - .env.production
+      - .env
     environment:
       APP_URL: https://docucast.bionic-natura.cloud
       DB_HOST: postgres
@@ -129,7 +129,7 @@ services:
     restart: always
     working_dir: /app
     env_file:
-      - .env.production
+      - .env
     environment:
       APP_URL: https://docucast.bionic-natura.cloud
       DB_HOST: postgres
@@ -162,7 +162,8 @@ networks:
     driver: bridge
   traefik:
     external: true
-    
+    name: traefik_default
+
 
 volumes:
   postgres_data:
