@@ -12,6 +12,8 @@ x-docucast-image: &docucast-image
 services:
   postgres:
     image: postgres:16-alpine
+    env_file:
+      - .env.production
     environment:
       POSTGRES_DB: ${DB_DATABASE:?DB_DATABASE is required}
       POSTGRES_USER: ${DB_USERNAME:?DB_USERNAME is required}
@@ -84,8 +86,8 @@ services:
     <<: *docucast-image
     restart: always
     working_dir: /app
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     env_file:
       - .env.production
     environment:
