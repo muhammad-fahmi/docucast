@@ -1,3 +1,14 @@
+x-docucast-image: &docucast-image
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      VITE_REVERB_APP_KEY: ${REVERB_APP_KEY:-docucast-app-key}
+      VITE_REVERB_HOST: docucast.bionic-natura.cloud
+      VITE_REVERB_PORT: 443
+      VITE_REVERB_SCHEME: https
+  image: 1808561084/docucast:latest
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -9,7 +20,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "PGPASSWORD=$$POSTGRES_PASSWORD psql -U $$POSTGRES_USER -d $$POSTGRES_DB -c 'SELECT 1' > /dev/null 2>&1"]
+      test:
+        [
+          "CMD-SHELL",
+          "PGPASSWORD=$$POSTGRES_PASSWORD psql -U $$POSTGRES_USER -d $$POSTGRES_DB -c 'SELECT 1' > /dev/null 2>&1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -33,12 +48,12 @@ services:
     restart: unless-stopped
 
   reverb:
-    image: 1808561084/docucast:latest
+    <<: *docucast-image
     command: reverb
     restart: always
     working_dir: /app
     env_file:
-      - .env
+      - .env.production
     environment:
       APP_URL: https://docucast.bionic-natura.cloud
       DB_HOST: postgres
@@ -66,11 +81,13 @@ services:
       start_period: 30s
 
   app:
-    image: 1808561084/docucast:latest
+    <<: *docucast-image
     restart: always
     working_dir: /app
+    ports:
+      - "80:80"
     env_file:
-      - .env
+      - .env.production
     environment:
       APP_URL: https://docucast.bionic-natura.cloud
       DB_HOST: postgres
@@ -81,6 +98,7 @@ services:
       REVERB_PORT: 443
       REVERB_SCHEME: https
       SESSION_SECURE_COOKIES: true
+
     volumes:
       - app_bootstrap:/app/bootstrap
       - app_storage:/app/storage
@@ -111,12 +129,12 @@ services:
       start_period: 40s
 
   queue:
-    image: 1808561084/docucast:latest
+    <<: *docucast-image
     command: queue
     restart: always
     working_dir: /app
     env_file:
-      - .env
+      - .env.production
     environment:
       APP_URL: https://docucast.bionic-natura.cloud
       DB_HOST: postgres
@@ -150,7 +168,6 @@ networks:
   traefik:
     external: true
     name: traefik_default
-
 
 volumes:
   postgres_data:
