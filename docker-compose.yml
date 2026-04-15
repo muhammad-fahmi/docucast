@@ -92,14 +92,8 @@ services:
       - .env.production
     environment:
       APP_URL: https://docucast.bionic-natura.cloud
+      ASSET_URL: https://docucast.bionic-natura.cloud
       DB_HOST: postgres
-      DB_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REVERB_HOST: docucast.bionic-natura.cloud
-      REVERB_PORT: 443
-      REVERB_SCHEME: https
-      SESSION_SECURE_COOKIES: true
 
     volumes:
       - app_bootstrap:/app/bootstrap
