@@ -65,9 +65,8 @@ class DocumentController extends Controller
             });
 
             return redirect()->back()->with('success', 'Document uploaded successfully!');
-
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Upload failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Upload failed: '.$e->getMessage());
         }
     }
 
@@ -86,8 +85,8 @@ class DocumentController extends Controller
 
         // Ensure this user is actually the assigned reviewer
         $approval = DocumentApproval::where('document_id', $document->id)
-                                    ->where('reviewer_id', $user->id)
-                                    ->firstOrFail();
+            ->where('reviewer_id', $user->id)
+            ->firstOrFail();
 
         DB::transaction(function () use ($request, $document, $approval, $latestVersion, $user) {
             if ($request->decision === 'approve') {
@@ -153,7 +152,7 @@ class DocumentController extends Controller
             $approval = DocumentApproval::where('document_id', $document->id)->first();
             $approval->update([
                 'status' => 'PENDING',
-                'processed_at' => null // Reset the timestamp so it shows as "unread/unprocessed"
+                'processed_at' => null, // Reset the timestamp so it shows as "unread/unprocessed"
             ]);
 
             // F. Log the resubmission

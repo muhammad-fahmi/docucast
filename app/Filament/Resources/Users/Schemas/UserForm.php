@@ -49,9 +49,9 @@ class UserForm
                         TextInput::make('password')
                             ->password()
                             ->revealable()
-                            ->required(fn(string $operation): bool => $operation === 'create')
-                            ->dehydrateStateUsing(fn(?string $state): ?string => filled($state) ? bcrypt($state) : null)
-                            ->dehydrated(fn(?string $state): bool => filled($state)),
+                            ->required(fn (string $operation): bool => $operation === 'create')
+                            ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? bcrypt($state) : null)
+                            ->dehydrated(fn (?string $state): bool => filled($state)),
                     ]),
 
                 Section::make('Roles')
@@ -59,9 +59,13 @@ class UserForm
                         Select::make('roles')
                             ->label('Assigned Roles')
                             ->multiple()
+                            ->searchable(false)
                             ->live()
+                            ->extraAlpineAttributes([
+                                'x-effect' => 'if (Array.isArray(state) && state.length > 0) { select?.closeDropdown() }',
+                            ])
                             ->options(
-                                fn(): array => Role::query()
+                                fn (): array => Role::query()
                                     ->orderBy('name')
                                     ->pluck('name', 'name')
                                     ->toArray()
@@ -69,7 +73,7 @@ class UserForm
                             ->disableOptionWhen(function (string $value, Get $get): bool {
                                 $selectedRoles = $get('roles') ?? [];
 
-                                if (!is_array($selectedRoles)) {
+                                if (! is_array($selectedRoles)) {
                                     return false;
                                 }
 
@@ -77,18 +81,18 @@ class UserForm
                                 $selectedExclusiveRoles = array_values(array_intersect($selectedRoles, $exclusiveRoles));
                                 $selectedRegularRoles = array_values(array_diff($selectedRoles, $exclusiveRoles));
 
-                                if (!empty($selectedExclusiveRoles)) {
+                                if (! empty($selectedExclusiveRoles)) {
                                     return $value !== $selectedExclusiveRoles[0];
                                 }
 
-                                return !empty($selectedRegularRoles) && in_array($value, $exclusiveRoles, true);
+                                return ! empty($selectedRegularRoles) && in_array($value, $exclusiveRoles, true);
                             })
                             ->afterStateUpdated(function (?array $state, Set $set): void {
                                 $roles = is_array($state) ? $state : [];
                                 $exclusiveRoles = ['super_admin', 'admin'];
                                 $selectedExclusiveRoles = array_values(array_intersect($roles, $exclusiveRoles));
 
-                                if (!empty($selectedExclusiveRoles)) {
+                                if (! empty($selectedExclusiveRoles)) {
                                     $set('roles', [$selectedExclusiveRoles[0]]);
                                 }
                             })

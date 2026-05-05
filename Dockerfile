@@ -1,93 +1,141 @@
-FROM php:8.4-fpm-alpine as builder
+# Multi-stage Dockerfile for Laravel 12 application with PHP 8.4-FPM
+# Optimized for development with Traefik, PostgreSQL, Redis, and Reverb
 
-WORKDIR /app
-
-RUN set -eux; \
-    apk update; \
-    for attempt in 1 2 3; do \
-    apk add --no-cache \
-    build-base \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    libzip-dev \
-    postgresql-dev \
-    icu-dev \
-    git \
-    curl \
-    unzip \
-    oniguruma-dev && break; \
-    if [ "$attempt" -eq 3 ]; then exit 1; fi; \
-    apk update; \
-    done; \
-    apk add --no-cache nodejs npm || apk add --no-cache nodejs-current npm
-
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    pecl install redis && \
-    docker-php-ext-enable redis && \
-    docker-php-ext-install -j$(nproc) pdo pdo_pgsql gd zip bcmath intl pcntl
-
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-COPY composer.json composer.lock ./
-RUN composer install --no-scripts --no-interaction --no-dev --optimize-autoloader
-
-COPY package.json package-lock.json ./
-RUN npm ci
-
-COPY . .
-
-RUN mkdir -p bootstrap/cache storage/logs storage/framework/cache storage/framework/sessions storage/framework/views && \
-    echo "APP_KEY=base64:dummykeydummykeydummykeydummykeydummies=" > .env && \
-    echo "APP_ENV=production" >> .env
-
-RUN composer run-script post-autoload-dump && rm .env
-
-ARG VITE_REVERB_APP_KEY=docucast-app-key
-ARG VITE_REVERB_HOST=docucast.bionic-natura.cloud
-ARG VITE_REVERB_PORT=443
-ARG VITE_REVERB_SCHEME=https
-
-RUN printf 'VITE_REVERB_APP_KEY=%s\nVITE_REVERB_HOST=%s\nVITE_REVERB_PORT=%s\nVITE_REVERB_SCHEME=%s\n' \
-    "${VITE_REVERB_APP_KEY}" "${VITE_REVERB_HOST}" "${VITE_REVERB_PORT}" "${VITE_REVERB_SCHEME}" > .env
-
-RUN npm run build && rm .env
-
-FROM php:8.4-fpm-alpine
+# ==========================================
+# Stage 1: Vendor dependencies installation
+# ==========================================
+FROM php:8.4-cli-alpine AS vendor
 
 WORKDIR /app
 
 RUN apk add --no-cache \
-    libpng \
-    libjpeg-turbo \
-    freetype \
-    libzip \
-    postgresql-libs \
     icu-libs \
-    nginx \
+    icu-dev \
+    libzip \
+    libzip-dev \
+    linux-headers \
+    unzip \
+    zip \
+    && docker-php-ext-install intl pcntl zip \
+    && apk del icu-dev libzip-dev linux-headers
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-plugins \
+    --no-scripts \
+    --prefer-dist
+
+# ==========================================
+# Stage 2: Frontend assets compilation
+# ==========================================
+FROM node:22-alpine AS frontend
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY resources resources
+COPY public public
+COPY vite.config.js package.json ./
+
+ARG VITE_APP_NAME
+ARG VITE_REVERB_APP_KEY
+ARG VITE_REVERB_HOST
+ARG VITE_REVERB_PORT
+ARG VITE_REVERB_SCHEME
+
+ENV VITE_APP_NAME=${VITE_APP_NAME}
+ENV VITE_REVERB_APP_KEY=${VITE_REVERB_APP_KEY}
+ENV VITE_REVERB_HOST=${VITE_REVERB_HOST}
+ENV VITE_REVERB_PORT=${VITE_REVERB_PORT}
+ENV VITE_REVERB_SCHEME=${VITE_REVERB_SCHEME}
+
+RUN npm run build
+
+# ==========================================
+# Stage 3: PHP-FPM runtime with queue worker
+# ==========================================
+FROM php:8.4-fpm-alpine AS app-runtime
+
+WORKDIR /var/www/html
+
+# Install runtime packages and PHP extensions for Laravel, PostgreSQL, Redis, and Reverb
+RUN apk add --no-cache \
+    bash \
+    fcgi \
+    git \
+    $PHPIZE_DEPS \
+    icu-libs \
+    icu-dev \
+    libpq-dev \
+    libzip \
+    libzip-dev \
+    linux-headers \
+    netcat-openbsd \
+    oniguruma-dev \
+    postgresql-client \
     supervisor \
-    curl \
-    bash
+    unzip \
+    zip \
+    && docker-php-ext-install \
+    intl \
+    pcntl \
+    pdo_pgsql \
+    zip \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del $PHPIZE_DEPS icu-dev libpq-dev libzip-dev linux-headers oniguruma-dev
 
-COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
-COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY docker/php/php-fpm.conf /usr/local/etc/php-fpm.conf
-COPY docker/php/php.ini /usr/local/etc/php/php.ini
-COPY docker/nginx/hostinger.conf /etc/nginx/http.d/default.conf
-COPY docker/supervisord.conf /etc/supervisord.conf
-COPY --from=builder /app /app
+COPY . .
+COPY --from=vendor /app/vendor ./vendor
+COPY --from=frontend /app/public/build ./public/build
+COPY docker/scripts/start-container.sh /usr/local/bin/start-container
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-RUN mkdir -p /app/storage/logs \
-    /app/bootstrap/cache \
-    /var/log/supervisor && \
-    chown -R www-data:www-data /app
+RUN chmod +x /usr/local/bin/start-container \
+    && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && mkdir -p /var/log/supervisor \
+    && chown -R www-data:www-data /var/www/html \
+    && chown -R www-data:www-data /var/log/supervisor \
+    && chmod -R ug+rwx storage bootstrap/cache
 
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Health check
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+    CMD cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/health || exit 1
+# Expose PHP-FPM port (internal communication)
+EXPOSE 9000
 
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["web"]
+# Start Supervisor to manage PHP-FPM and queue worker processes
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+
+# ==========================================
+# Stage 4: Nginx web server
+# ==========================================
+FROM nginx:1.27-alpine AS nginx-runtime
+
+WORKDIR /var/www/html
+
+# Copy public assets and Nginx configuration
+COPY public ./public
+COPY --from=frontend /app/public/build ./public/build
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+
+RUN mkdir -p /var/www/html/storage/app/public \
+    && ln -sf /var/www/html/storage/app/public /var/www/html/public/storage \
+    && chown -R nginx:nginx /var/www/html
+
+# Expose HTTP port (internal communication with Traefik)
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost/health || exit 1

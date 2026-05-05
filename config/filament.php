@@ -16,7 +16,7 @@ return [
 
     'broadcasting' => [
 
-        'echo' => [
+        'echo' => env('FILAMENT_BROADCASTING_ENABLED', false) ? [
             'broadcaster' => 'pusher',
             'key' => env('VITE_REVERB_APP_KEY'),
             // 'cluster' => env('VITE_REVERB_APP_CLUSTER'),
@@ -25,9 +25,9 @@ return [
             'wssPort' => env('VITE_REVERB_PORT'),
             'authEndpoint' => '/broadcasting/auth',
             'disableStats' => true,
-            'encrypted' => true,
-            'forceTLS' => true,
-        ],
+            'encrypted' => env('VITE_REVERB_SCHEME', 'http') === 'https',
+            'forceTLS' => env('VITE_REVERB_SCHEME', 'http') === 'https',
+        ] : null,
 
     ],
 

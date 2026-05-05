@@ -1,33 +1,227 @@
+# ==============================================================================
+# .dockerignore - Files to exclude from Docker build context
+# Reduces Docker image size and build time by excluding unnecessary files
+# ==============================================================================
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Version Control Systems
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 .git
 .gitignore
+.gitattributes
+.github
+.gitlab-ci.yml
+.gitmodules
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Security & Sensitive Data
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Environment files contain sensitive API keys, database credentials
 .env
-.env.*.local
-.DS_Store
+.env.*
+!.env.example
+
+# Credentials and secrets
+**/config/credentials.*
+**/config/secrets.*
+**/keys/
+**/passwords/
+**/private/
+**/secrets/
+
+*.auth
+*.authz
+*.password
+*.secret
+*.secrets
+*.token
+*_tokens
+
+apikeys.*
+credentials
+database.ini
+database.yml
+secrets.json
+secrets.yaml
+secrets.yml
+tokens.*
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# IDE & Editor Configuration
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 .vscode
 .idea
-*.swp
-*.swo
-*~
-node_modules
-vendor
-storage/logs
-storage/cache
-storage/framework/sessions
-storage/framework/views
-storage/framework/cache
-bootstrap/cache
-public/storage
+.sublime-project
+.sublime-workspace
+*.sublime-workspace
+*.sublime-project
+.project
+.settings
+.classpath
+.c9/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.vscode-test
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Build Artifacts & Distribution
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+**/dist/
+**/build/
+**/public/build/
+
+mix-manifest.json
 public/hot
-tests
+public/storage
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Dependency Management & Package Cache
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+**/node_modules/
+composer.phar
+vendor/
+.pnpm-store/
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Development & Runtime Artifacts
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+**/.cache/
+**/.vite/
+**/.vite-cache/
+**/logs/
+**/temp/
+**/tmp/
+
 .phpunit.result.cache
-docker-compose*.yml
-Dockerfile
-.dockerignore
-.gitattributes
-docker-build*.log
-.claude
-.mcp.json
-.opencode
+*.cache
+*.log
+*.log.*
+*.temp
+*.tmp
+bootstrap/cache/config.php
+bootstrap/cache/packages.php
+bootstrap/cache/services.php
+horizon.pid
+storage/logs/octane*
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Laravel Specific
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+bootstrap/cache/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+storage/logs/
+storage/app/*
+!storage/app/.gitkeep
+**/storage/framework/octane/
+**/storage/reverb/
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Testing & Quality Assurance
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+**/coverage/
+**/test-results/
+.phpunit.result.cache
+phpunit.xml
+phpunit.xml.dist
+*.coverage
+*.coverage.*
+pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Tool-Specific Patterns
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+**/.bzr/
+**/.cvs/
+**/.hg/
+**/.svn/
+**/.DS_Store
+**/._.DS_Store
+
+._*
+*.bak
+*.old
+*.orig
+*.save
+*.swo
+*.swp
+*~
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Documentation
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Keep as reference during build but exclude from final image
+CHANGELOG.md
+CONTRIBUTING.md
+CONTRIBUTORS.md
+docs/
+examples/
 README.md
-CLAUDE.md
-AGENTS.md
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Docker Files (not needed in the image)
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# CI/CD Configuration
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+.travis.yml
+.circleci/
+.gitlab-ci.yml
+appveyor.yml
+azure-pipelines.yml
+bitbucket-pipelines.yml
+.github/workflows/
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# OS & System Files
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+Thumbs.db
+ehthumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+*.lnk
+$RECYCLE.BIN/
+.nox/
+.eggs/
+*.egg-info/
+dist/
+build/
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Package Manager Lock Files (if not needed)
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Note: Keep composer.lock and package-lock.json during build for reproducible installs
+# Only exclude if you do clean installs
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Node Package Manager Caches
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.npmrc
+.yarnrc
+
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# Virtual Environments
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+venv/
+env/
+ENV/
+.venv
+.env.venv

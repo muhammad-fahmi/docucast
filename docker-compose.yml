@@ -1,172 +1,283 @@
-x-docucast-image: &docucast-image
-  build:
-    context: .
-    dockerfile: Dockerfile
-    args:
-      VITE_REVERB_APP_KEY: ${REVERB_APP_KEY:-docucast-app-key}
-      VITE_REVERB_HOST: docucast.bionic-natura.cloud
-      VITE_REVERB_PORT: 443
-      VITE_REVERB_SCHEME: https
-  image: 1808561084/docucast:latest
+# Docker Compose configuration for DocuCast Laravel application
+# Development environment with Traefik, PostgreSQL 18, Redis, and Reverb WebSocket server
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    env_file:
-      - .env.production
-    environment:
-      POSTGRES_DB: ${DB_DATABASE:?DB_DATABASE is required}
-      POSTGRES_USER: ${DB_USERNAME:?DB_USERNAME is required}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
-      POSTGRES_INITDB_ARGS: "--locale=C --encoding=UTF8"
+  # ==========================================
+  # Traefik - Reverse Proxy and Router
+  # ==========================================
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    command:
+      - --api.dashboard=false
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=docucast_edge
+      - --entrypoints.web.address=:80
+      - --log.level=INFO
+    ports:
+      - "80:80"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - edge
+    restart: unless-stopped
+
+  # ==========================================
+  # App - PHP-FPM with Laravel application and Queue Worker
+  # ==========================================
+  app:
+    build:
+      context: .
+      target: app-runtime
+      args:
+        VITE_APP_NAME: ${VITE_APP_NAME:-DocuCast}
+        VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY}
+        VITE_REVERB_HOST: localhost
+        VITE_REVERB_PORT: 80
+        VITE_REVERB_SCHEME: http
+    container_name: docucast-app
+    env_file:
+      - .env
+    environment:
+      # Application Configuration
+      APP_ENV: local
+      APP_DEBUG: true
+      APP_URL: http://localhost
+
+      # Database Configuration
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-docucast}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+
+      # Redis Configuration
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+
+      # Queue Configuration - Using Redis for queue jobs
+      QUEUE_CONNECTION: redis
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+
+      # Reverb - Real-time WebSocket Configuration
+      BROADCAST_CONNECTION: reverb
+      REVERB_HOST: reverb
+      REVERB_PORT: 8080
+      REVERB_SERVER_HOST: 0.0.0.0
+      REVERB_SERVER_PORT: 8080
+      REVERB_SCHEME: http
+
+      # Vite Frontend Configuration
+      VITE_REVERB_HOST: localhost
+      VITE_REVERB_PORT: 80
+      VITE_REVERB_SCHEME: http
+
+      # Composer Configuration
+      COMPOSER_ALLOW_SUPERUSER: 1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "9000"
+    volumes:
+      # Code and storage volumes for development
+      - .:/var/www/html
+      - app-storage:/var/www/html/storage
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # ==========================================
+  # Nginx - Web Server
+  # ==========================================
+  nginx:
+    build:
+      context: .
+      target: nginx-runtime
+    container_name: docucast-nginx
+    depends_on:
+      - app
+    expose:
+      - "80"
+    volumes:
+      # Share code and storage with app container
+      - .:/var/www/html
+      - app-storage:/var/www/html/storage
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "PGPASSWORD=$$POSTGRES_PASSWORD psql -U $$POSTGRES_USER -d $$POSTGRES_DB -c 'SELECT 1' > /dev/null 2>&1",
+          "wget -q -O - http://127.0.0.1/health >/dev/null 2>&1 || exit 1",
         ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+    labels:
+      # Traefik configuration for routing
+      - traefik.enable=true
+      - traefik.docker.network=docucast_edge
+      - traefik.http.routers.docucast-web.rule=Host(`localhost`) ||
+        Host(`docucast.localhost`)
+      - traefik.http.routers.docucast-web.entrypoints=web
+      - traefik.http.services.docucast-web.loadbalancer.server.port=80
     networks:
-      - app-network
+      - edge
+      - internal
     restart: unless-stopped
 
-  redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
+  # ==========================================
+  # Reverb - WebSocket Server for Real-time Notifications
+  # ==========================================
+  reverb:
+    build:
+      context: .
+      target: app-runtime
+      args:
+        VITE_APP_NAME: ${VITE_APP_NAME:-DocuCast}
+        VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY}
+        VITE_REVERB_HOST: localhost
+        VITE_REVERB_PORT: 80
+        VITE_REVERB_SCHEME: http
+    container_name: docucast-reverb
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    env_file:
+      - .env
+    environment:
+      # Application Configuration
+      APP_ENV: local
+      APP_DEBUG: true
+      APP_URL: http://localhost
+
+      # Database Configuration
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-docucast}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+
+      # Redis Configuration
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+
+      # Queue Configuration
+      QUEUE_CONNECTION: redis
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+
+      # Reverb Configuration
+      BROADCAST_CONNECTION: reverb
+      REVERB_HOST: reverb
+      REVERB_PORT: 8080
+      REVERB_SERVER_HOST: 0.0.0.0
+      REVERB_SERVER_PORT: 8080
+      REVERB_SCHEME: http
+
+      # Vite Configuration
+      VITE_REVERB_HOST: localhost
+      VITE_REVERB_PORT: 80
+      VITE_REVERB_SCHEME: http
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "8080"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD-SHELL", "php -r '$$s=@fsockopen(\"127.0.0.1\",8080); exit($$s?0:1);'" ]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 15s
+    volumes:
+      # Share code and storage
+      - .:/var/www/html
+      - app-storage:/var/www/html/storage
     networks:
-      - app-network
+      - internal
     restart: unless-stopped
 
-  reverb:
-    <<: *docucast-image
-    command: reverb
-    restart: always
-    working_dir: /app
-    env_file:
-      - .env.production
+  # ==========================================
+  # PostgreSQL 18 - Database
+  # ==========================================
+  db:
+    image: postgres:18.3
+    container_name: docucast-db
     environment:
-      APP_URL: https://docucast.bionic-natura.cloud
-      DB_HOST: postgres
-      DB_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REVERB_SERVER_HOST: 0.0.0.0
-      REVERB_SERVER_PORT: 8080
-      REVERB_HOST: docucast.bionic-natura.cloud
-      REVERB_PORT: 443
-      REVERB_SCHEME: https
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - app-network
+      # Database initialization
+      PGDATA: /var/lib/postgresql/18/docker
+      POSTGRES_DB: ${DB_DATABASE:-docucast}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_INITDB_ARGS: ${POSTGRES_INITDB_ARGS:---locale=C --encoding=UTF8}
     healthcheck:
-      test:
-        ["CMD-SHELL", 'php -r ''exit(@fsockopen("127.0.0.1", 8080) ? 0 : 1);''']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-
-  app:
-    <<: *docucast-image
-    restart: always
-    working_dir: /app
-    expose:
-      - "80"
-    env_file:
-      - .env.production
-    environment:
-      APP_URL: https://docucast.bionic-natura.cloud
-      ASSET_URL: https://docucast.bionic-natura.cloud
-      DB_HOST: postgres
-
+      # Use $$ so Docker evaluates the container's own env vars at runtime
+      test: [ "CMD-SHELL", "pg_isready -q -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      # First run initialises the data directory - give it enough time
+      start_period: 60s
     volumes:
-      - app_bootstrap:/app/bootstrap
-      - app_storage:/app/storage
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      reverb:
-        condition: service_started
+      # Persistent database data storage
+      - postgres-data:/var/lib/postgresql
     networks:
-      - app-network
-      - traefik
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik_default"
-      - "traefik.http.routers.docucast-app.rule=Host(`docucast.bionic-natura.cloud`)"
-      - "traefik.http.routers.docucast-app.entrypoints=websecure"
-      - "traefik.http.routers.docucast-app.tls=true"
-      - "traefik.http.routers.docucast-app.service=docucast-app"
-      - "traefik.http.routers.docucast-app.priority=10"
-      - "traefik.http.services.docucast-app.loadbalancer.server.port=80"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      - internal
+    restart: unless-stopped
 
-  queue:
-    <<: *docucast-image
-    command: queue
-    restart: always
-    working_dir: /app
-    env_file:
-      - .env.production
-    environment:
-      APP_URL: https://docucast.bionic-natura.cloud
-      DB_HOST: postgres
-      DB_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REVERB_HOST: docucast.bionic-natura.cloud
-      REVERB_PORT: 443
-      REVERB_SCHEME: https
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+  # ==========================================
+  # Redis - Cache and Session Storage
+  # ==========================================
+  redis:
+    image: redis:alpine
+    container_name: docucast-redis
+    command: [ "redis-server", "--appendonly", "yes", "--save", "60", "1" ]
+    ports:
+      # Port 6380 exposed for WebSocket connections (as per requirements)
+      - "6380:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    volumes:
+      # Persistent Redis data storage
+      - redis-data:/data
     networks:
-      - app-network
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pgrep -f 'artisan (queue:work|horizon)' >/dev/null || exit 1",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      - internal
+    restart: unless-stopped
 
-networks:
-  app-network:
-    driver: bridge
-  traefik:
-    external: true
-    name: traefik_default
-
+# ==========================================
+# Named Volumes - Persistent Data Storage
+# ==========================================
 volumes:
-  postgres_data:
-  redis_data:
-  app_bootstrap:
-  app_storage:
+  app-storage:
+    driver: local
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+
+# ==========================================
+# Networks - Service Communication
+# ==========================================
+networks:
+  # External network for Traefik to expose services
+  edge:
+    driver: bridge
+
+  # Internal network for service-to-service communication
+  internal:
+    driver: bridge

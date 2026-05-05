@@ -5,25 +5,26 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Request as HttpFoundationRequest;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         channels: __DIR__.'/../routes/channels.php',
-        web: __DIR__ . '/../routes/web.php',
-        commands: __DIR__ . '/../routes/console.php',
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR |
-            Request::HEADER_X_FORWARDED_HOST |
-            Request::HEADER_X_FORWARDED_PORT |
-            Request::HEADER_X_FORWARDED_PROTO |
-            Request::HEADER_X_FORWARDED_AWS_ELB);
+        $middleware->trustProxies(at: '*', headers: HttpFoundationRequest::HEADER_X_FORWARDED_FOR |
+            HttpFoundationRequest::HEADER_X_FORWARDED_HOST |
+            HttpFoundationRequest::HEADER_X_FORWARDED_PORT |
+            HttpFoundationRequest::HEADER_X_FORWARDED_PROTO |
+            HttpFoundationRequest::HEADER_X_FORWARDED_AWS_ELB);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $redirectForbidden = function (Request $request) {
-            if (!$request->headers->has('referer')) {
+            if (! $request->headers->has('referer')) {
                 return redirect('/');
             }
 

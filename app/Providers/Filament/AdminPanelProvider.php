@@ -31,12 +31,18 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->homeUrl('/admin')
             ->login()
-            ->databaseNotifications(livewireComponent: DatabaseNotifications::class)
-            ->databaseNotificationsPolling('5s')
             ->colors([
+                'danger' => Color::Rose,
                 'primary' => Color::Blue,
             ])
-            ->brandName('DocuCast')
+            ->font('Arial')
+            ->databaseNotifications(
+                condition: fn (): bool => auth()->check(),
+                livewireComponent: DatabaseNotifications::class,
+            )
+            ->databaseNotificationsPolling(null)
+            ->brandName(str('<div style="align-items: center; display: flex;"><img src="'.asset('logo_light.png').'" alt="DocuCast" style="height: 40px; margin-right: 10px;"> DocuCast</div>')->inlineMarkdown()->toHtmlString())
+            ->favicon(asset('logo_light.png'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
