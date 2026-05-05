@@ -2,26 +2,26 @@
 # Development environment with Traefik, PostgreSQL 18, Redis, and Reverb WebSocket server
 
 services:
-  # ==========================================
-  # Traefik - Reverse Proxy and Router
-  # ==========================================
-  traefik:
-    image: traefik:v3.6
-    container_name: traefik
-    command:
-      - --api.dashboard=false
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --providers.docker.network=docucast_edge
-      - --entrypoints.web.address=:80
-      - --log.level=INFO
-    ports:
-      - "80:80"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - edge
-    restart: unless-stopped
+  # # ==========================================
+  # # Traefik - Reverse Proxy and Router
+  # # ==========================================
+  # traefik:
+  #   image: traefik:v3.6
+  #   container_name: traefik
+  #   command:
+  #     - --api.dashboard=false
+  #     - --providers.docker=true
+  #     - --providers.docker.exposedbydefault=false
+  #     - --providers.docker.network=docucast_edge
+  #     - --entrypoints.web.address=:80
+  #     - --log.level=INFO
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   networks:
+  #     - edge
+  #   restart: unless-stopped
 
   # ==========================================
   # App - PHP-FPM with Laravel application and Queue Worker
