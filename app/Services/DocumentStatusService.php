@@ -22,7 +22,7 @@ class DocumentStatusService
         $hasRevision = (bool) $summary['hasRevision'];
         $allApproved = $summary['approvedCount'] === $summary['totalRecipients'];
 
-        if ($hasRevision || !$allApproved) {
+        if ($hasRevision || ! $allApproved) {
             return DocumentStatus::InReview;
         }
 
@@ -52,7 +52,7 @@ class DocumentStatusService
             return false;
         }
 
-        if (!$currentStatus->canTransitionTo($targetStatus)) {
+        if (! $currentStatus->canTransitionTo($targetStatus)) {
             return false;
         }
 

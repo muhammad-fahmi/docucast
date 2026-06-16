@@ -5,7 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -15,25 +16,25 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        if (!Schema::hasTable('documents')) {
+        if (! Schema::hasTable('documents')) {
             return;
         }
 
         // Ensure all required columns from the new schema exist
         Schema::table('documents', function (Blueprint $table): void {
-            if (!Schema::hasColumn('documents', 'description')) {
+            if (! Schema::hasColumn('documents', 'description')) {
                 $table->text('description')->nullable();
             }
-            if (!Schema::hasColumn('documents', 'file_path')) {
+            if (! Schema::hasColumn('documents', 'file_path')) {
                 $table->string('file_path')->nullable();
             }
-            if (!Schema::hasColumn('documents', 'file_name')) {
+            if (! Schema::hasColumn('documents', 'file_name')) {
                 $table->string('file_name')->nullable();
             }
-            if (!Schema::hasColumn('documents', 'status')) {
+            if (! Schema::hasColumn('documents', 'status')) {
                 $table->enum('status', ['pending', 'in_review', 'approved'])->default('pending');
             }
-            if (!Schema::hasColumn('documents', 'uploader_id') && Schema::hasColumn('documents', 'initiator_id')) {
+            if (! Schema::hasColumn('documents', 'uploader_id') && Schema::hasColumn('documents', 'initiator_id')) {
                 // For SQLite, we can't easily rename columns with constraints
                 // So we'll add a new column and copy data
                 $table->foreignId('uploader_id')->nullable()->constrained('users')->nullOnDelete();
@@ -59,12 +60,12 @@ return new class extends Migration {
                     ->whereNotNull('overall_status')
                     ->update([
                         'status' => DB::raw(
-                            "CASE overall_status " .
-                            "WHEN 'APPROVED' THEN 'approved' " .
-                            "WHEN 'PENDING_REVIEW' THEN 'in_review' " .
-                            "WHEN 'NEEDS_REVISION' THEN 'in_review' " .
+                            'CASE overall_status '.
+                            "WHEN 'APPROVED' THEN 'approved' ".
+                            "WHEN 'PENDING_REVIEW' THEN 'in_review' ".
+                            "WHEN 'NEEDS_REVISION' THEN 'in_review' ".
                             "ELSE 'pending' END"
-                        )
+                        ),
                     ]);
             } elseif ($connection === 'pgsql') {
                 DB::statement(<<<'SQL'

@@ -21,7 +21,7 @@ class RoleAndPermissionSeeder extends Seeder
 
         // Create default super admin account
         $superAdmin = User::firstOrCreate(
-            ['email' => 'superadmin@docucast.com'],
+            ['nik' => 'superadmin'],
             [
                 'name' => 'Super Admin',
                 'password' => bcrypt('Super@dmin1'),
@@ -32,7 +32,7 @@ class RoleAndPermissionSeeder extends Seeder
 
         // Create default admin account
         $admin = User::firstOrCreate(
-            ['email' => 'admin@docucast.com'],
+            ['nik' => 'admin'],
             [
                 'name' => 'Admin',
                 'password' => bcrypt('Adm!nDoc1'),

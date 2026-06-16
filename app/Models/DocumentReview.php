@@ -12,6 +12,8 @@ class DocumentReview extends Model
         'user_id',
         'status',
         'message',
+        'attachment_path',
+        'attachment_name',
     ];
 
     public function document(): BelongsTo

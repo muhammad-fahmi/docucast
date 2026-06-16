@@ -13,28 +13,28 @@ class DocumentRecipientResolver
 
         if ($selectionType === 'individual') {
             $recipientIds = array_values(array_unique(array_map('intval', $state['recipient_user_ids'] ?? [])));
-            $document->recipients()->sync($recipientIds);
+            $syncResult = $document->recipients()->sync($recipientIds);
 
-            return $recipientIds;
+            return $syncResult['attached'] ?? [];
         }
 
-        $divisionId = isset($state['recipient_division_id']) ? (int) $state['recipient_division_id'] : null;
+        $divisionIds = array_filter(array_map('intval', $state['recipient_division_ids'] ?? []));
 
-        if ($divisionId === null || $divisionId <= 0) {
-            $document->recipients()->sync([]);
+        if (empty($divisionIds)) {
+            $syncResult = $document->recipients()->sync([]);
 
-            return [];
+            return $syncResult['attached'] ?? [];
         }
 
         $recipientIds = User::query()
-            ->where('division_id', $divisionId)
-            ->whereHas('roles', fn($query) => $query->where('name', 'recipient'))
+            ->whereIn('division_id', $divisionIds)
+            ->whereHas('roles', fn ($query) => $query->where('name', 'recipient'))
             ->pluck('id')
-            ->map(static fn($id): int => (int) $id)
+            ->map(static fn ($id): int => (int) $id)
             ->all();
 
-        $document->recipients()->sync($recipientIds);
+        $syncResult = $document->recipients()->sync($recipientIds);
 
-        return $recipientIds;
+        return $syncResult['attached'] ?? [];
     }
 }

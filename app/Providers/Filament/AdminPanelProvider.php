@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\AvatarProviders\LocalSvgAvatarProvider;
+use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\Auth\Login;
 use App\Livewire\Filament\DatabaseNotifications;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -20,6 +23,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use JibayMcs\FilamentTour\FilamentTourPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -27,10 +31,12 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
+            ->defaultAvatarProvider(LocalSvgAvatarProvider::class)
             ->id('admin')
             ->path('admin')
             ->homeUrl('/admin')
-            ->login()
+            ->login(Login::class)
+            ->profile(EditProfile::class)
             ->colors([
                 'danger' => Color::Rose,
                 'primary' => Color::Blue,
@@ -67,6 +73,7 @@ class AdminPanelProvider extends PanelProvider
                 FilamentShieldPlugin::make(),
                 MobileBottomNav::make()
                     ->fromNavigation(limit: 4),
+                FilamentTourPlugin::make(),
             ])
             ->authMiddleware([
                 Authenticate::class,

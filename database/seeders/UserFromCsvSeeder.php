@@ -31,9 +31,9 @@ class UserFromCsvSeeder extends Seeder
     public function run(): void
     {
         $divisions = Division::all()->keyBy('slug');
-        $csvPath = base_path('data_keryawan.csv');
+        $csvPath = base_path('data_karyawan.csv');
 
-        if (!file_exists($csvPath)) {
+        if (! file_exists($csvPath)) {
             $this->command->warn("CSV file not found at: {$csvPath}");
 
             return;
@@ -45,7 +45,7 @@ class UserFromCsvSeeder extends Seeder
         fgetcsv($handle);
 
         while (($row = fgetcsv($handle)) !== false) {
-            [$employeeNo, $name, $jobTitle, $csvRole, $password, $email] = $row;
+            [$employeeNo, $name, $jobTitle, $csvRole, $password, $nik] = $row;
 
             $divisionId = null;
             $divisionSlug = $this->roleToDivisionSlug[trim($csvRole)] ?? null;
@@ -55,7 +55,7 @@ class UserFromCsvSeeder extends Seeder
             }
 
             $user = User::firstOrCreate(
-                ['email' => trim($email)],
+                ['nik' => trim($nik)],
                 [
                     'name' => trim($name),
                     'employee_no' => trim($employeeNo),
@@ -66,8 +66,8 @@ class UserFromCsvSeeder extends Seeder
                 ]
             );
 
-            if (!$user->hasRole('super_admin') && !$user->hasRole('admin')) {
-                $user->assignRole('recipient');
+            if (! $user->hasRole('super_admin') && ! $user->hasRole('admin')) {
+                $user->assignRole(['recipient', 'uploader']);
             }
         }
 

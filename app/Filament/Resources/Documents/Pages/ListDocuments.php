@@ -13,7 +13,26 @@ class ListDocuments extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->visible(function () {
+                    $user = auth()->user();
+                    $roles = $user->roles->pluck('name')->toArray();
+
+                    return ! (count($roles) === 1 && in_array('recipient', $roles));
+                }),
+        ];
+    }
+
+    public function getListeners(): array
+    {
+        if (empty(config('filament.broadcasting.echo'))) {
+            return [];
+        }
+
+        $authId = auth()->id();
+
+        return [
+            "echo-private:App.Models.User.{$authId},.database-notifications.sent" => '$refresh',
         ];
     }
 }

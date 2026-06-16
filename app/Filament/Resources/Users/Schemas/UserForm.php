@@ -23,9 +23,8 @@ class UserForm
                         TextInput::make('name')
                             ->required()
                             ->maxLength(255),
-                        TextInput::make('email')
-                            ->label('Email Address')
-                            ->email()
+                        TextInput::make('nik')
+                            ->label('NIK')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
@@ -42,6 +41,10 @@ class UserForm
                             ->preload(),
                         DateTimePicker::make('email_verified_at')
                             ->label('Email Verified At'),
+                        TextInput::make('telegram_chat_id')
+                            ->label('Telegram Chat ID')
+                            ->maxLength(255)
+                            ->hint('Required for Telegram notifications.'),
                     ]),
 
                 Section::make('Security')

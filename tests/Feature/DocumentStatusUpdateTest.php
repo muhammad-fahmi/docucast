@@ -6,8 +6,8 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
-use App\Services\DocumentStatusService;
 use App\Services\DocumentReviewAuthorizationService;
+use App\Services\DocumentStatusService;
 
 it('marks document approved only when all recipients approved', function (): void {
     $uploader = User::factory()->create();
@@ -166,4 +166,38 @@ it('allows recipient to review again after uploader reopens recipient review', f
     expect(app(DocumentReviewAuthorizationService::class)->canUserSubmitReview($document->fresh(), $recipient))->toBeTrue();
     expect(DocumentReview::query()->where('document_id', $document->id)->where('user_id', $recipient->id)->exists())->toBeFalse();
     expect($document->fresh()->status)->toBe('in_review');
+});
+
+it('saves attachment_path and attachment_name when creating a review', function (): void {
+    $uploader = User::factory()->create();
+    $recipient = User::factory()->create();
+
+    $document = Document::query()->create([
+        'title' => 'Policy with Attachment',
+        'description' => null,
+        'file_path' => 'documents/policy.pdf',
+        'file_name' => 'policy.pdf',
+        'uploader_id' => $uploader->id,
+        'status' => 'in_review',
+    ]);
+
+    $document->recipients()->sync([$recipient->id]);
+
+    DocumentReview::query()->create([
+        'document_id' => $document->id,
+        'user_id' => $recipient->id,
+        'status' => 'approved',
+        'message' => 'Looks great',
+        'attachment_path' => 'review-attachments/feedback.pdf',
+        'attachment_name' => 'feedback.pdf',
+    ]);
+
+    $review = DocumentReview::query()
+        ->where('document_id', $document->id)
+        ->where('user_id', $recipient->id)
+        ->first();
+
+    expect($review)->not->toBeNull();
+    expect($review->attachment_path)->toBe('review-attachments/feedback.pdf');
+    expect($review->attachment_name)->toBe('feedback.pdf');
 });

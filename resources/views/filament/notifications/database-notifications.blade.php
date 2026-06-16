@@ -21,9 +21,9 @@
             : \Filament\Notifications\View\NotificationsIconAlias::DATABASE_MODAL_EMPTY_STATE
         " :icon-color="$hasNotifications ? null : 'gray'" id="database-notifications" slide-over
         :sticky-header="$hasNotifications" teleport="body" width="md" class="fi-no-database" :attributes="
-            new ComponentAttributeBag([
-            'wire:poll.' . $pollingInterval => $pollingInterval ? '' : false,
-        ])
+            $pollingInterval ? new ComponentAttributeBag([
+                'wire:poll.' . $pollingInterval => '',
+            ]) : new ComponentAttributeBag()
         ">
         @if ($trigger = $this->getTrigger())
             <x-slot name="trigger">

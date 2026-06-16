@@ -17,6 +17,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
     use HasRoles;
 
     /**
@@ -26,11 +27,13 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'nik',
         'email',
         'password',
         'employee_no',
         'job_title',
         'division_id',
+        'telegram_chat_id',
     ];
 
     /**
@@ -74,5 +77,10 @@ class User extends Authenticatable
     public function documentReviews(): HasMany
     {
         return $this->hasMany(DocumentReview::class);
+    }
+
+    public function routeNotificationForTelegram()
+    {
+        return $this->telegram_chat_id;
     }
 }

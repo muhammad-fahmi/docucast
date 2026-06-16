@@ -6,6 +6,7 @@ use App\Models\DocumentReview;
 use App\Models\User;
 use App\Notifications\RecipientSubmittedReviewNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Notification;
 use Spatie\Permission\Models\Role;
 
@@ -57,6 +58,7 @@ test('sends notification to uploader when recipient submits review', function ()
         RecipientSubmittedReviewNotification::class,
         function (RecipientSubmittedReviewNotification $notification) use ($document, $recipient): bool {
             $data = $notification->toArray($recipient); // Pass any user for toArray
+
             return $data['document_id'] === $document->id
                 && $data['reviewer_id'] === $recipient->id;
         }
@@ -119,7 +121,7 @@ test('notification mail contains recipient name and review details', function ()
     $mail = $notification->toMail($uploader);
 
     expect($mail)
-        ->toBeInstanceOf(\Illuminate\Notifications\Messages\MailMessage::class);
+        ->toBeInstanceOf(MailMessage::class);
 
     // Verify mail contains key information by checking the mail properties
     expect($mail->subject)
@@ -128,4 +130,3 @@ test('notification mail contains recipient name and review details', function ()
     expect($mail->introLines)
         ->toContain('Jane Recipient has submitted a review for your document.');
 });
-

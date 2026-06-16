@@ -9,3 +9,62 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+.rich-text-content ul {
+    list-style-type: disc !important;
+    padding-left: 1.5rem !important;
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+.rich-text-content ol {
+    list-style-type: decimal !important;
+    padding-left: 1.5rem !important;
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+.rich-text-content li {
+    margin-bottom: 0.25rem !important;
+}
+.rich-text-content p {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+.rich-text-content strong {
+    font-weight: 700 !important;
+}
+.rich-text-content em {
+    font-style: italic !important;
+}
+.rich-text-content a {
+    text-decoration: underline !important;
+    color: var(--primary-600) !important;
+}
+.dark .rich-text-content a {
+    color: var(--primary-400) !important;
+}
+
+/* Reduce rich editor toolbar icon sizes to 12px */
+.fi-fo-rich-editor-tool svg {
+    width: 12px !important;
+    height: 12px !important;
+}
+
+/* Fix Filament Tour next/prev button styling.
+   The Tailwind utility classes (bg-custom-600, bg-white, text-gray-950, etc.) are not
+   generated because the driver.js popover is dynamically injected outside the Tailwind
+   build pipeline. We apply styles directly via CSS. */
+.driver-popover-next-btn {
+    background-color: var(--primary-600) !important;
+    color: white !important;
+}
+.driver-popover-next-btn:hover {
+    background-color: var(--primary-500) !important;
+}
+.driver-popover-prev-btn {
+    background-color: white !important;
+    color: #09090b !important;
+    box-shadow: 0 0 0 1px rgba(9, 9, 11, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+.driver-popover-prev-btn:hover {
+    background-color: #f9fafb !important;
+}

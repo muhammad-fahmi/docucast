@@ -13,7 +13,7 @@ class CreateUser extends CreateRecord
     {
         $roles = $this->form->getRawState()['roles'] ?? [];
 
-        if (!empty($roles)) {
+        if (! empty($roles)) {
             $roles = $this->enforceRoleConstraints($roles);
             $this->record->syncRoles($roles);
         }
