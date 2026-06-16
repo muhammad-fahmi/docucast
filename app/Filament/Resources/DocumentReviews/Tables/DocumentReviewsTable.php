@@ -12,7 +12,7 @@ class DocumentReviewsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn(Builder $query): Builder => $query->with(['document:id,title', 'reviewer:id,name']))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['document:id,title', 'reviewer:id,name']))
             ->columns([
                 TextColumn::make('document.title')
                     ->label('Document')
@@ -24,7 +24,7 @@ class DocumentReviewsTable
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'approved' => 'success',
                         'revision' => 'warning',
                         default => 'gray',

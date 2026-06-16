@@ -9,19 +9,18 @@ class DocumentReviewAuthorizationService
 {
     public function __construct(
         private DocumentStatusService $statusService,
-    ) {
-    }
+    ) {}
 
     /**
      * Check if user can submit a review for this document
      */
     public function canUserSubmitReview(Document $document, User $user): bool
     {
-        if (!$this->isRecipient($document, $user)) {
+        if (! $this->isRecipient($document, $user)) {
             return false;
         }
 
-        return !$this->hasApprovedReview($document, $user);
+        return ! $this->hasApprovedReview($document, $user);
     }
 
     /**

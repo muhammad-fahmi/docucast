@@ -21,7 +21,7 @@ class DocumentFactory extends Factory
             'title' => fake()->sentence(),
             'description' => fake()->paragraph(),
             'file_path' => fake()->filePath(),
-            'file_name' => fake()->word() . '.pdf',
+            'file_name' => fake()->word().'.pdf',
             'uploader_id' => 1, // Default, can be overridden with ->for()
             'status' => 'pending',
         ];

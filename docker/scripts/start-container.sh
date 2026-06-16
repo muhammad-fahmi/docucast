@@ -18,6 +18,10 @@ cd /var/www/html
 # Generate Application Key (if not exists)
 # ==========================================
 if [ -z "$APP_KEY" ]; then
+    if [ ! -f .env ]; then
+        echo "📝 No .env file found, creating a new one to store APP_KEY..."
+        echo "APP_KEY=" > .env
+    fi
     echo "🔑 Generating application key..."
     php artisan key:generate --no-interaction || true
 fi
@@ -26,7 +30,7 @@ fi
 # Wait for Database to be Ready
 # ==========================================
 echo "⏳ Waiting for database to be ready..."
-DB_HOST=${DB_HOST:-localhost}
+DB_HOST=${DB_HOST:-db}
 DB_PORT=${DB_PORT:-5432}
 DB_USERNAME=${DB_USERNAME:-postgres}
 DB_DATABASE=${DB_DATABASE:-docucast}
@@ -59,7 +63,7 @@ REDIS_PORT=${REDIS_PORT:-6379}
 RETRY=0
 
 while [ $RETRY -lt $MAX_RETRY ]; do
-    if redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" ping 2>/dev/null | grep -q PONG; then
+    if nc -z "$REDIS_HOST" "$REDIS_PORT" 2>/dev/null; then
         echo "✅ Redis is ready!"
         break
     fi
@@ -90,9 +94,10 @@ elif id -u nginx >/dev/null 2>&1; then
 fi
 
 if [ -n "$owner_group" ]; then
-    chown -R "$owner_group" storage bootstrap/cache
+    # Target only framework, logs, and bootstrap/cache to avoid slow recursion on user uploads
+    chown -R "$owner_group" storage/framework storage/logs bootstrap/cache || true
 fi
-chmod -R ug+rwx storage bootstrap/cache
+chmod -R ug+rwx storage/framework storage/logs bootstrap/cache || true
 
 # ==========================================
 # Storage Symlink
@@ -103,11 +108,11 @@ if [ ! -L public/storage ]; then
 fi
 
 # ==========================================
-# Clear Caches
+# Clear Caches & Package Manifests
 # ==========================================
-echo "🧹 Clearing application caches..."
-php artisan config:clear --no-interaction || true
-php artisan cache:clear --no-interaction || true
+echo "🧹 Clearing application caches and stale manifests..."
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php bootstrap/cache/routes.php
+php artisan optimize:clear --no-interaction || true
 
 # ==========================================
 # Run Database Migrations
@@ -120,16 +125,24 @@ php artisan migrate --force --no-interaction
 # ==========================================
 if [ "${SEED_DATABASE}" == "true" ]; then
     echo "🌱 Running database seeders..."
-    php artisan db:seed --no-interaction
+    php artisan db:seed --force --no-interaction
 else
     echo "⏭️  Skipping database seeders (set SEED_DATABASE=true to enable)"
 fi
 
 # ==========================================
-# Optimize Application
+# Optimize / Clear Cache based on environment
 # ==========================================
-echo "⚡ Optimizing application..."
-php artisan optimize --no-interaction || true
+if [ "${APP_ENV}" = "local" ] || [ "${APP_ENV}" = "testing" ]; then
+    echo "🧹 Clearing application caches for local development..."
+    php artisan config:clear --no-interaction || true
+    php artisan route:clear --no-interaction || true
+    php artisan view:clear --no-interaction || true
+    php artisan cache:clear --no-interaction || true
+else
+    echo "⚡ Optimizing application for production..."
+    php artisan optimize --no-interaction || true
+fi
 
 # ==========================================
 # Start Supervisor (manages PHP-FPM and Queue Worker)

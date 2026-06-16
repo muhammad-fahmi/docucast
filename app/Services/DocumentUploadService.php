@@ -14,8 +14,7 @@ class DocumentUploadService
 {
     public function __construct(
         private DocumentStatusService $statusService,
-    ) {
-    }
+    ) {}
 
     /**
      * Store initial document upload

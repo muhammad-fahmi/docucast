@@ -3,6 +3,7 @@
 namespace App\Livewire\Filament;
 
 use Filament\Livewire\DatabaseNotifications as BaseDatabaseNotifications;
+use Illuminate\Contracts\View\View;
 use Illuminate\Notifications\DatabaseNotification;
 
 class DatabaseNotifications extends BaseDatabaseNotifications
@@ -19,7 +20,7 @@ class DatabaseNotifications extends BaseDatabaseNotifications
             ->whereKey($id)
             ->first();
 
-        if (!$notification) {
+        if (! $notification) {
             return;
         }
 
@@ -32,7 +33,7 @@ class DatabaseNotifications extends BaseDatabaseNotifications
         $this->dispatch('open-modal', id: 'database-notification-document-detail');
     }
 
-    public function render(): \Illuminate\Contracts\View\View
+    public function render(): View
     {
         return view('filament.notifications.database-notifications');
     }

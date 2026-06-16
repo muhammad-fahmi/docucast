@@ -9,7 +9,7 @@ class RevisionHistory extends Model
 {
     protected $fillable = [
         'document_id', 'related_version_id', 'commenter_id',
-        'action_type', 'comments'
+        'action_type', 'comments',
     ];
 
     public function document(): BelongsTo

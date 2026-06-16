@@ -18,8 +18,7 @@ class RecipientSubmittedReviewNotification extends Notification
     public function __construct(
         protected Document $document,
         protected DocumentReview $review,
-    ) {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
@@ -44,9 +43,9 @@ class RecipientSubmittedReviewNotification extends Notification
             ->line("{$reviewerName} has submitted a review for your document.")
             ->line("**Document:** {$this->document->title}")
             ->line("**Unique Code:** {$this->document->unique_code}")
-            ->line("**Decision:** " . ucfirst($this->review->status))
+            ->line('**Decision:** '.ucfirst($this->review->status))
             ->when($this->review->message, function (MailMessage $mailMessage): MailMessage {
-                return $mailMessage->line("**Message:**")
+                return $mailMessage->line('**Message:**')
                     ->line($this->review->message);
             });
 

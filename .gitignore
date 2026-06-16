@@ -26,6 +26,28 @@ Homestead.json
 /storage/pail
 .env.backup
 .env.production
+.env.prod
 .phpactor.json
 auth.json
 .vscode
+# Added by code-review-graph
+.code-review-graph/
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+QODER.md
+.cursorrules
+.windsurfrules
+
+# AI Agent config, skills, and guidelines
+.gemini/
+.antigravitycli/
+.claude/
+.kiro/
+.qoder/
+skills/
+.cline/
+.cursor/
+.windsurf/
+.mcp.json
+.opencode.json

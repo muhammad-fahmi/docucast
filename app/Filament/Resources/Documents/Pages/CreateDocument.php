@@ -3,8 +3,9 @@
 namespace App\Filament\Resources\Documents\Pages;
 
 use App\Filament\Resources\Documents\DocumentResource;
-use App\Services\DocumentRecipientResolver;
 use App\Models\User;
+use App\Notifications\DocumentAssignedNotification;
+use App\Services\DocumentRecipientResolver;
 use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
@@ -13,13 +14,20 @@ class CreateDocument extends CreateRecord
 {
     protected static string $resource = DocumentResource::class;
 
+    protected static bool $canCreateAnother = false;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['uploader_id'] = Auth::id();
         $data['status'] = 'pending';
 
         // Strip virtual recipient fields before saving
-        unset($data['recipient_selection_type'], $data['recipient_user_ids'], $data['recipient_division_id']);
+        unset($data['recipient_selection_type'], $data['recipient_user_ids'], $data['recipient_division_ids']);
 
         return $data;
     }
@@ -53,7 +61,16 @@ class CreateDocument extends CreateRecord
                     ]);
 
                 $dashboardNotification->sendToDatabase($recipients);
-                $dashboardNotification->broadcast($recipients);
+                try {
+                    $dashboardNotification->broadcast($recipients);
+                } catch (\Exception $e) {
+                    // Ignore broadcast exceptions if Reverb/Pusher is down
+                }
+
+                // Send Notification
+                foreach ($recipients as $recipient) {
+                    $recipient->notify(new DocumentAssignedNotification($this->record));
+                }
             }
         }
     }

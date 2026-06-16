@@ -9,7 +9,7 @@ class DocumentVersion extends Model
 {
     protected $fillable = [
         'document_id', 'version_number', 'file_storage_path',
-        'original_filename', 'uploaded_by'
+        'original_filename', 'uploaded_by',
     ];
 
     // Links back to the master stable ID

@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Documents;
 use App\Filament\Resources\Documents\Pages\CreateDocument;
 use App\Filament\Resources\Documents\Pages\EditDocument;
 use App\Filament\Resources\Documents\Pages\ListDocuments;
+use App\Filament\Resources\Documents\Pages\ReviewDocument;
+use App\Filament\Resources\Documents\RelationManagers\VersionsRelationManager;
 use App\Filament\Resources\Documents\Schemas\DocumentForm;
 use App\Filament\Resources\Documents\Tables\DocumentsTable;
 use App\Models\Document;
@@ -49,7 +51,7 @@ class DocumentResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return false;
         }
 
@@ -65,7 +67,7 @@ class DocumentResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return parent::getEloquentQuery()->whereRaw('1 = 0');
         }
 
@@ -80,14 +82,14 @@ class DocumentResource extends Resource
 
         return $query->where(function (Builder $q) use ($userId): void {
             $q->where('uploader_id', $userId)
-                ->orWhereHas('recipients', fn(Builder $rq) => $rq->where('users.id', $userId));
+                ->orWhereHas('recipients', fn (Builder $rq) => $rq->where('users.id', $userId));
         });
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            VersionsRelationManager::class,
         ];
     }
 
@@ -97,6 +99,8 @@ class DocumentResource extends Resource
             'index' => ListDocuments::route('/'),
             'create' => CreateDocument::route('/create'),
             'edit' => EditDocument::route('/{record}/edit'),
+            'review' => ReviewDocument::route('/{record}/review'),
+            'history' => Pages\DocumentHistory::route('/{record}/history'),
         ];
     }
 }

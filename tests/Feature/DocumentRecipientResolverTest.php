@@ -67,7 +67,7 @@ it('syncs only recipient-role users for division selection', function (): void {
 
     $recipientIds = app(DocumentRecipientResolver::class)->syncRecipientsFromState($document, [
         'recipient_selection_type' => 'division',
-        'recipient_division_id' => $division->id,
+        'recipient_division_ids' => [$division->id],
     ]);
 
     expect($recipientIds)->toBe([$recipientInDivision->id]);
@@ -76,7 +76,45 @@ it('syncs only recipient-role users for division selection', function (): void {
         ->not->toContain($recipientOtherDivision->id);
 });
 
-it('clears recipients when division selection is chosen without a division id', function (): void {
+it('syncs recipients for multiple division selection', function (): void {
+    Role::create(['name' => 'recipient', 'guard_name' => 'web']);
+
+    $divisionA = Division::query()->create([
+        'name' => 'Quality Assurance',
+        'slug' => 'quality-assurance',
+    ]);
+
+    $divisionB = Division::query()->create([
+        'name' => 'Operations',
+        'slug' => 'operations',
+    ]);
+
+    $uploader = User::factory()->create();
+    $recipientA = User::factory()->create(['division_id' => $divisionA->id]);
+    $recipientB = User::factory()->create(['division_id' => $divisionB->id]);
+
+    $recipientA->assignRole('recipient');
+    $recipientB->assignRole('recipient');
+
+    $document = Document::query()->create([
+        'title' => 'Cross-dept Memo',
+        'description' => null,
+        'file_path' => 'documents/memo.pdf',
+        'file_name' => 'memo.pdf',
+        'uploader_id' => $uploader->id,
+        'status' => 'pending',
+    ]);
+
+    $recipientIds = app(DocumentRecipientResolver::class)->syncRecipientsFromState($document, [
+        'recipient_selection_type' => 'division',
+        'recipient_division_ids' => [$divisionA->id, $divisionB->id],
+    ]);
+
+    expect($recipientIds)->toContain($recipientA->id, $recipientB->id);
+    expect(count($recipientIds))->toBe(2);
+});
+
+it('clears recipients when division selection is chosen without any division ids', function (): void {
     Role::create(['name' => 'recipient', 'guard_name' => 'web']);
 
     $uploader = User::factory()->create();
@@ -96,7 +134,7 @@ it('clears recipients when division selection is chosen without a division id', 
 
     $recipientIds = app(DocumentRecipientResolver::class)->syncRecipientsFromState($document, [
         'recipient_selection_type' => 'division',
-        'recipient_division_id' => null,
+        'recipient_division_ids' => [],
     ]);
 
     expect($recipientIds)->toBe([]);

@@ -14,8 +14,7 @@ class DocumentReviewService
     public function __construct(
         private DocumentStatusService $statusService,
         private DocumentReviewAuthorizationService $authorizationService,
-    ) {
-    }
+    ) {}
 
     /**
      * Submit a review for a document
@@ -28,7 +27,7 @@ class DocumentReviewService
     ): DocumentReview {
         return DB::transaction(function () use ($document, $reviewer, $reviewStatus, $comments) {
             // 1. Check authorization
-            if (!$this->authorizationService->canUserSubmitReview($document, $reviewer)) {
+            if (! $this->authorizationService->canUserSubmitReview($document, $reviewer)) {
                 throw new \InvalidArgumentException('User cannot submit review for this document');
             }
 

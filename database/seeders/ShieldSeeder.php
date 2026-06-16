@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
+use BezhanSalleh\FilamentShield\Support\Utils;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use BezhanSalleh\FilamentShield\Support\Utils;
 use Spatie\Permission\PermissionRegistrar;
 
 class ShieldSeeder extends Seeder
@@ -80,7 +81,7 @@ class ShieldSeeder extends Seeder
             unset($data['roles'], $data['permissions'], $data['tenant_roles'], $data['tenant_permissions']);
 
             $user = $userModel::firstOrCreate(
-                ['email' => $data['email']],
+                ['nik' => $data['nik']],
                 $data
             );
 
@@ -145,9 +146,9 @@ class ShieldSeeder extends Seeder
             return;
         }
 
-        /** @var \Illuminate\Database\Eloquent\Model $roleModel */
+        /** @var Model $roleModel */
         $roleModel = Utils::getRoleModel();
-        /** @var \Illuminate\Database\Eloquent\Model $permissionModel */
+        /** @var Model $permissionModel */
         $permissionModel = Utils::getPermissionModel();
 
         $tenancyEnabled = false;
@@ -192,7 +193,7 @@ class ShieldSeeder extends Seeder
             return;
         }
 
-        /** @var \Illuminate\Database\Eloquent\Model $permissionModel */
+        /** @var Model $permissionModel */
         $permissionModel = Utils::getPermissionModel();
 
         foreach ($permissions as $permission) {

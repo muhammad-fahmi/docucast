@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DocumentApproval extends Model
 {
     protected $fillable = [
-        'document_id', 'reviewer_id', 'status', 'processed_at'
+        'document_id', 'reviewer_id', 'status', 'processed_at',
     ];
 
     // Important for casting dates so Laravel treats it as a Carbon instance
