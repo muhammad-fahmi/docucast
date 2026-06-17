@@ -1,0 +1,108 @@
+---
+title: "Deployment"
+description: "Guidelines for deploying DocuCast to a production environment using Docker"
+---
+
+Deploying DocuCast requires preparing your environment for production and orchestrating your containers. Since DocuCast is built to run on Docker, deploying to production is highly streamlined using Docker Compose.
+
+## Production Checklist
+
+Before deploying, review the following checklist to ensure your application is secure and performant:
+
+- [ ] Set `APP_ENV=production` and `APP_DEBUG=false` in your `.env` file.
+- [ ] Ensure `APP_KEY` is set to a secure, randomly generated string.
+- [ ] Configure a secure SSL/TLS certificate (Traefik can handle this via Let's Encrypt).
+- [ ] Ensure your `docker-compose.yml` or production equivalent overrides development settings (e.g., exposing only necessary ports).
+
+## Deployment Steps
+
+<Steps>
+  <Step title="Environment Configuration">
+    Configure your `.env` for the production environment on your host machine. Ensure that you update your database credentials, Redis settings, and WebSocket host configurations correctly.
+
+    ```env
+    APP_ENV=production
+    APP_DEBUG=false
+    APP_URL=https://docucast.yourdomain.com
+
+    DB_CONNECTION=pgsql
+    DB_HOST=docucast-db # Using Docker service name
+    DB_PASSWORD=your-secure-password
+
+    # Reverb WebSocket Configuration
+    REVERB_HOST="docucast.yourdomain.com"
+    REVERB_PORT=443
+    REVERB_SCHEME=https
+    ```
+  </Step>
+
+  <Step title="Build and Start Containers">
+    In a production environment, you should start your Docker Compose stack. It's recommended to build the images on the production server (or use pre-built images from a registry).
+
+    ```bash
+    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+    ```
+    *(Assuming you have a production override file; otherwise, just use `docker compose up -d --build`)*
+  </Step>
+
+  <Step title="Optimize Laravel">
+    Run Laravel's built-in optimization commands inside the application container to cache configuration, routes, and views for faster execution.
+
+    ```bash
+    docker compose exec app php artisan config:cache
+    docker compose exec app php artisan route:cache
+    docker compose exec app php artisan view:cache
+    ```
+  </Step>
+
+  <Step title="Run Migrations">
+    Run the database migrations inside the app container. Make sure to use the `--force` flag since Laravel protects against running migrations in a production environment.
+
+    ```bash
+    docker compose exec app php artisan migrate --force
+    ```
+  </Step>
+</Steps>
+
+## Managing Background Processes
+
+DocuCast relies heavily on background queues and WebSockets. Since you are using Docker, these processes are managed as individual containers rather than using a process monitor like Supervisor.
+
+### Queue Workers
+
+If you haven't already, add a dedicated queue worker service to your `docker-compose.yml`:
+
+```yaml
+  queue:
+    build:
+      context: .
+      target: app-runtime
+    image: 1808561084/docucast-app:v1
+    container_name: docucast-queue
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    environment: *app-env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - internal
+    restart: unless-stopped
+```
+
+You can easily scale the number of queue workers using Docker Compose:
+
+```bash
+docker compose up -d --scale queue=3
+```
+
+### Laravel Reverb
+
+The Reverb WebSocket server is already defined as the `reverb` service in your `docker-compose.yml`. Docker will automatically manage this container and restart it if it crashes (`restart: unless-stopped`).
+
+## Traefik and SSL
+
+In production, Traefik handles reverse proxying and SSL termination. You can configure Traefik to automatically issue Let's Encrypt certificates by adding the appropriate labels to the `nginx` and `reverb` services in your `docker-compose.yml` to enable HTTPS traffic.
+
+## Docker Swarm / Kubernetes (Optional)
+
+If you are deploying using Docker Swarm or Kubernetes, you can utilize the provided Dockerfiles and the `docker-compose.yml` (adapted for production) to orchestrate your containers. Ensure that you persist data volumes for PostgreSQL and Redis to prevent data loss upon container restarts.

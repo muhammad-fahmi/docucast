@@ -1,0 +1,46 @@
+---
+title: "Architecture"
+description: "Overview of the technical stack and infrastructure of DocuCast"
+---
+
+DocuCast is built using a modern, robust tech stack designed for high performance, real-time interactivity, and ease of deployment. It leverages the Laravel 12 ecosystem to provide a seamless developer and user experience.
+
+## Technical Stack
+
+<CardGroup cols={2}>
+  <Card title="Laravel 12" icon="laravel">
+    The core backend framework, providing routing, ORM (Eloquent), queues, and business logic.
+  </Card>
+  <Card title="Filament 5" icon="layer-group">
+    A collection of beautiful full-stack components, powering the administrative and user interfaces.
+  </Card>
+  <Card title="Tailwind CSS v4 & Vite" icon="palette">
+    Utility-first CSS framework and modern frontend build tool for rapid UI development and asset compilation.
+  </Card>
+  <Card title="Laravel Reverb" icon="satellite-dish">
+    A blazing-fast, scalable WebSocket server for Laravel, enabling real-time document broadcasting and updates.
+  </Card>
+</CardGroup>
+
+## Infrastructure
+
+The application uses a containerized infrastructure orchestrated by **Docker Compose**, ensuring parity across development and production environments.
+
+### Services
+
+- **App (PHP-FPM)**: Executes the Laravel application and handles incoming HTTP requests and background queue processing.
+- **Nginx**: Serves as the web server, serving static frontend assets and passing PHP requests to the App container.
+- **PostgreSQL 18**: The primary relational database used to store application data, user records, and document metadata.
+- **Redis**: An in-memory data structure store used for caching, session management, and queue brokering.
+- **Reverb**: The WebSocket server handling real-time, bi-directional communication between the server and the clients.
+- **Traefik**: A modern reverse proxy and load balancer that routes traffic to the appropriate containers (Web and WebSockets) using Docker labels.
+
+### Real-time Communication
+
+Real-time capabilities are central to DocuCast. When a document is updated or broadcasted, Laravel dispatches an event. **Laravel Reverb** handles these events and pushes them instantly to connected clients via WebSockets, ensuring all users have the latest information without refreshing their browsers.
+
+## Key Dependencies
+
+- **Filament Shield**: For role and permission management.
+- **Laravel Notification Channels (Telegram)**: For sending alerts and notifications via Telegram.
+- **DOMPDF & SimpleXLSXGen**: For generating PDF and Excel documents directly from the application.

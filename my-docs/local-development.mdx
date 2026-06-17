@@ -1,0 +1,105 @@
+---
+title: "Local Development"
+description: "Set up the DocuCast project locally using Docker Compose"
+---
+
+This guide will walk you through setting up DocuCast on your local machine for development. The project uses Docker Compose to provide a consistent and isolated environment.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed on your machine:
+
+- **Docker Desktop** (or Docker Engine + Docker Compose)
+- **Composer** (PHP dependency manager)
+- **Node.js & npm** (Frontend dependency manager)
+- **Git**
+
+## Setup Guide
+
+Follow these steps to get the application running locally.
+
+<Steps>
+  <Step title="Clone the Repository">
+    First, clone the DocuCast repository to your local machine.
+
+    ```bash
+    git clone https://github.com/your-org/docucast.git
+    cd docucast
+    ```
+  </Step>
+
+  <Step title="Install PHP and Node.js Dependencies">
+    Install the required backend and frontend packages.
+
+    ```bash
+    composer install
+    npm install
+    ```
+  </Step>
+
+  <Step title="Environment Configuration">
+    Create a copy of the example environment file.
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    Generate the application key:
+
+    ```bash
+    php artisan key:generate
+    ```
+  </Step>
+
+  <Step title="Start the Docker Environment">
+    DocuCast uses Docker Compose to run PostgreSQL, Redis, Traefik, Nginx, the PHP app, and the Reverb WebSocket server. 
+    
+    Start all services in detached mode:
+
+    ```bash
+    docker compose up -d
+    ```
+
+    <Tip>
+      The first time you run this command, Docker will download and build the necessary images, which may take a few minutes.
+    </Tip>
+  </Step>
+
+  <Step title="Run Migrations and Build Assets">
+    Once the database container is up and running, execute the database migrations. 
+    Since the application is running inside Docker, you can run the migrations either locally (if you have PHP/PostgreSQL extensions) or inside the container.
+
+    **Using local PHP (requires local PostgreSQL extensions):**
+    ```bash
+    php artisan migrate
+    ```
+
+    **Or inside the Docker container:**
+    ```bash
+    docker compose exec app php artisan migrate
+    ```
+
+    Next, build the frontend assets using Vite:
+
+    ```bash
+    npm run build
+    ```
+    
+    *For continuous asset building during development, use `npm run dev`.*
+  </Step>
+</Steps>
+
+## Accessing the Application
+
+Once everything is up and running, you can access the application through Traefik's routing:
+
+- **Web Application**: `http://docucast.localhost`
+- **Reverb WebSockets**: Routed automatically via Traefik on the same host path.
+
+## Useful Commands
+
+Here are some helpful commands during local development:
+
+- **View container logs**: `docker compose logs -f`
+- **Stop the environment**: `docker compose down`
+- **Access the app container shell**: `docker compose exec app bash`
