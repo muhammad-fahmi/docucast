@@ -29,13 +29,13 @@ class DocumentsTable
             ->modifyQueryUsing(function (Builder $query) use ($user): Builder {
                 $query->with(['uploader:id,name']);
                 $query->withExists([
-                    'reviews as has_approved_reviews' => fn (Builder $reviewQuery): Builder => $reviewQuery->where('status', 'approved'),
+                    'reviews as has_approved_reviews' => fn(Builder $reviewQuery): Builder => $reviewQuery->where('status', 'approved'),
                 ]);
 
                 if ($user?->hasRole('recipient')) {
                     $query->withExists([
-                        'recipients as is_recipient' => fn (Builder $recipientQuery): Builder => $recipientQuery->where('users.id', $user->id),
-                        'reviews as has_approved_review_by_user' => fn (Builder $reviewQuery): Builder => $reviewQuery
+                        'recipients as is_recipient' => fn(Builder $recipientQuery): Builder => $recipientQuery->where('users.id', $user->id),
+                        'reviews as has_approved_review_by_user' => fn(Builder $reviewQuery): Builder => $reviewQuery
                             ->where('user_id', $user->id)
                             ->where('status', 'approved'),
                     ]);
@@ -52,7 +52,7 @@ class DocumentsTable
                     ->label('Unique Code')
                     ->searchable()
                     ->sortable()
-                    ->url(fn ($record): string => DocumentResource::getUrl('history', ['record' => $record]))
+                    ->url(fn($record): string => DocumentResource::getUrl('history', ['record' => $record]))
                     ->color('primary'),
                 TextColumn::make('uploader.name')
                     ->label('Uploaded By')
@@ -60,7 +60,7 @@ class DocumentsTable
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'pending' => 'warning',
                         'in_review' => 'info',
                         'approved' => 'success',
@@ -90,7 +90,7 @@ class DocumentsTable
                     ->label('Review')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->url(fn ($record): string => DocumentResource::getUrl('review', ['record' => $record]))
+                    ->url(fn($record): string => DocumentResource::getUrl('review', ['record' => $record]))
                     ->visible(function ($record): bool {
                         if (! Auth::check()) {
                             return false;
@@ -121,7 +121,7 @@ class DocumentsTable
                                     ->where('status', 'approved')
                                     ->with('reviewer:id,name')
                                     ->get()
-                                    ->mapWithKeys(fn (DocumentReview $review): array => [$review->user_id => $review->reviewer?->name ?? (string) $review->user_id])
+                                    ->mapWithKeys(fn(DocumentReview $review): array => [$review->user_id => $review->reviewer?->name ?? (string) $review->user_id])
                                     ->toArray();
                             })
                             ->required()
@@ -167,7 +167,7 @@ class DocumentsTable
                                     ->label('Reviewer'),
                                 TextEntry::make('status')
                                     ->badge()
-                                    ->color(fn (string $state): string => match ($state) {
+                                    ->color(fn(string $state): string => match ($state) {
                                         'approved' => 'success',
                                         'revision' => 'warning',
                                         default => 'gray',
@@ -175,6 +175,16 @@ class DocumentsTable
                                 TextEntry::make('message')
                                     ->placeholder('No message provided')
                                     ->columnSpanFull(),
+                                TextEntry::make('attachment_name')
+                                    ->label('Attachment')
+                                    ->placeholder('No attachment')
+                                    ->icon('heroicon-o-paper-clip')
+                                    ->url(
+                                        fn($record): ?string => $record->attachment_path
+                                            ? route('filament.documents.attachment.download', ['review' => $record->id])
+                                            : null
+                                    )
+                                    ->visible(fn($record): bool => filled($record->attachment_path)),
                                 TextEntry::make('updated_at')
                                     ->label('Updated')
                                     ->dateTime('d M Y H:i'),

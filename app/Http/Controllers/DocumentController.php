@@ -88,27 +88,46 @@ class DocumentController extends Controller
             ->where('reviewer_id', $user->id)
             ->firstOrFail();
 
-        DB::transaction(function () use ($request, $document, $approval, $latestVersion, $user) {
-            if ($request->decision === 'approve') {
-                $approval->update(['status' => 'APPROVED', 'processed_at' => now()]);
-                $document->update(['overall_status' => 'APPROVED']);
-                $actionType = 'APPROVED';
-            } else {
-                $approval->update(['status' => 'REJECTED_FOR_REVISION', 'processed_at' => now()]);
-                $document->update(['overall_status' => 'NEEDS_REVISION']);
-                $actionType = 'REQUESTED_REVISION';
+        try {
+            DB::transaction(function () use ($request, $document, $approval, $latestVersion, $user) {
+                if ($request->decision === 'approve') {
+                    $approval->update(['status' => 'APPROVED', 'processed_at' => now()]);
+                    $document->update(['overall_status' => 'APPROVED']);
+                    $actionType = 'APPROVED';
+                } else {
+                    $approval->update(['status' => 'REJECTED_FOR_REVISION', 'processed_at' => now()]);
+                    $document->update(['overall_status' => 'NEEDS_REVISION']);
+                    $actionType = 'REQUESTED_REVISION';
+                }
+
+                RevisionHistory::create([
+                    'document_id' => $document->id,
+                    'related_version_id' => $latestVersion->id,
+                    'commenter_id' => $user->id,
+                    'action_type' => $actionType,
+                    'comments' => $request->comments,
+                ]);
+            });
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Review submitted successfully!',
+                    'document' => $document->fresh(),
+                ]);
             }
 
-            RevisionHistory::create([
-                'document_id' => $document->id,
-                'related_version_id' => $latestVersion->id, // The version they looked at
-                'commenter_id' => $user->id,
-                'action_type' => $actionType,
-                'comments' => $request->comments,
-            ]);
-        });
+            return redirect()->back()->with('success', 'Review submitted successfully!');
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Review submission failed: '.$e->getMessage(),
+                ], 500);
+            }
 
-        return redirect()->back()->with('success', 'Review submitted successfully!');
+            return redirect()->back()->with('error', 'Review submission failed: '.$e->getMessage());
+        }
     }
 
     /**
