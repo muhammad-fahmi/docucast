@@ -70,17 +70,28 @@
                                     @endif
                                     @if ($review->attachment_path)
                                         <div style="margin-top: var(--spacing-gr-xs);">
-                                            <a 
-                                                href="{{ Storage::url($review->attachment_path) }}" 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                class="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-500 font-semibold underline dark:text-primary-400"
-                                            >
-                                                <svg class="w-3.5 h-3.5 -mt-px" width="14" height="14" style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <div class="inline-flex items-center gap-2">
+                                                <svg class="w-3.5 h-3.5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                                 </svg>
-                                                {{ $review->attachment_name ?: 'Attachment' }}
-                                            </a>
+                                                <a
+                                                    href="{{ route('filament.documents.attachment.preview', ['review' => $review->id]) }}"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="text-xs text-primary-600 hover:text-primary-500 font-semibold underline dark:text-primary-400"
+                                                >
+                                                    {{ $review->attachment_name ?: 'Attachment' }}
+                                                </a>
+                                                <a
+                                                    href="{{ route('filament.documents.attachment.download', ['review' => $review->id]) }}"
+                                                    title="Download"
+                                                    class="text-gray-400 hover:text-primary-500 transition-colors"
+                                                >
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                                    </svg>
+                                                </a>
+                                            </div>
                                         </div>
                                     @endif
                                 </div>
