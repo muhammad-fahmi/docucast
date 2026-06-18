@@ -10,7 +10,38 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentReviewAttachmentController extends Controller
 {
-    public function __invoke(DocumentReview $review): StreamedResponse
+    public function download(DocumentReview $review): StreamedResponse
+    {
+        $this->authorize($review);
+
+        [$disk, $fileName] = $this->resolve($review);
+
+        return $disk->download($review->attachment_path, $fileName);
+    }
+
+    public function preview(DocumentReview $review): StreamedResponse
+    {
+        $this->authorize($review);
+
+        [$disk, $fileName] = $this->resolve($review);
+
+        $mimeType = $disk->mimeType($review->attachment_path);
+        $stream = $disk->readStream($review->attachment_path);
+
+        return response()->stream(
+            function () use ($stream) {
+                fpassthru($stream);
+            },
+            200,
+            [
+                'Content-Type'        => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . $fileName . '"',
+                'Cache-Control'       => 'no-cache, private',
+            ]
+        );
+    }
+
+    private function authorize(DocumentReview $review): void
     {
         /** @var User|null $user */
         $user = Auth::user();
@@ -25,7 +56,10 @@ class DocumentReviewAttachmentController extends Controller
 
         abort_unless($isAllowed, 403);
         abort_unless(filled($review->attachment_path), 404);
+    }
 
+    private function resolve(DocumentReview $review): array
+    {
         $disk = Storage::disk(config('filesystems.default'));
 
         if (! $disk->exists($review->attachment_path)) {
@@ -35,6 +69,6 @@ class DocumentReviewAttachmentController extends Controller
 
         $fileName = $review->attachment_name ?: basename($review->attachment_path);
 
-        return $disk->download($review->attachment_path, $fileName);
+        return [$disk, $fileName];
     }
 }
