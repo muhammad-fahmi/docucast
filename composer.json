@@ -14,8 +14,10 @@
         "barryvdh/laravel-dompdf": "*",
         "bezhansalleh/filament-shield": "^4.1",
         "caresome/filament-auth-designer": "^3.1",
+        "devletes/filament-timeline-view": "^1.1",
         "filament/filament": "^5.3",
         "hammadzafar05/mobile-bottom-nav": "^1.0",
+        "janczakb/filament-flex-fields": "^2.7",
         "jibaymcs/filament-tour": "^5.0",
         "joaopaulolndev/filament-pdf-viewer": "^3.0",
         "laravel-notification-channels/telegram": "^7.0",
@@ -24,6 +26,7 @@
         "laravel/tinker": "^2.10.1",
         "predis/predis": "^3.4",
         "shuchkin/simplexlsxgen": "*",
+        "stechstudio/filament-impersonate": "^5.5",
         "tinify/tinify": "^1.6"
     },
     "require-dev": {
@@ -70,7 +73,8 @@
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
-            "@php artisan filament:upgrade"
+            "@php artisan filament:upgrade",
+            "@php artisan filament:assets --ansi"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
