@@ -12,7 +12,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Tables\Columns\Layout\Grid;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -53,9 +53,7 @@ class DocumentsTable
                 TextColumn::make('unique_code')
                     ->label('Unique Code')
                     ->searchable()
-                    ->sortable()
-                    ->url(fn($record): string => DocumentResource::getUrl('history', ['record' => $record]))
-                    ->color('primary'),
+                    ->sortable(),
                 TextColumn::make('uploader.name')
                     ->label('Uploaded By')
                     ->searchable()
@@ -166,7 +164,7 @@ class DocumentsTable
                             ->placeholder('No feedback has been submitted yet.')
                             ->schema([
                                 TextEntry::make('reviewer.name')
-                                    ->weight(\Filament\Support\Enums\FontWeight::SemiBold)
+                                    ->weight(FontWeight::SemiBold)
                                     ->icon('heroicon-o-user-circle'),
                                 TextEntry::make('status')
                                     ->badge()
@@ -193,14 +191,14 @@ class DocumentsTable
                                         }
 
                                         $downloadUrl = route('filament.documents.attachment.download', ['review' => $record->id]);
-                                        $previewUrl  = route('filament.documents.attachment.preview', ['review' => $record->id]);
+                                        $previewUrl = route('filament.documents.attachment.preview', ['review' => $record->id]);
 
                                         return Blade::render(
                                             '<div>
                                                 <span class="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-1.5 text-sm shadow-sm">
                                                     <a href="{{ $download }}" class="text-primary-600 dark:text-primary-400 underline hover:text-primary-500">{{ $name }}</a>
                                                      <a href="{{ $preview }}" target="_blank" title="Preview in new tab" class="text-gray-400 hover:text-primary-500 transition-colors shrink-0">
-                                                        [Preview]                                              
+                                                        [Preview]
                                                      </a>
                                                 </span>
                                             </div>
