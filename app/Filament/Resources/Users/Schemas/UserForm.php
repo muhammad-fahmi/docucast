@@ -45,6 +45,10 @@ class UserForm
                             ->label('Telegram Chat ID')
                             ->maxLength(255)
                             ->hint('Required for Telegram notifications.'),
+                        TextInput::make('phone_number')
+                            ->label('Whatsapp Phone Number')
+                            ->numeric()
+                            ->hint('Required for Whatsapp notifications.'),
                     ]),
 
                 Section::make('Security')
@@ -52,9 +56,9 @@ class UserForm
                         TextInput::make('password')
                             ->password()
                             ->revealable()
-                            ->required(fn (string $operation): bool => $operation === 'create')
-                            ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? bcrypt($state) : null)
-                            ->dehydrated(fn (?string $state): bool => filled($state)),
+                            ->required(fn(string $operation): bool => $operation === 'create')
+                            ->dehydrateStateUsing(fn(?string $state): ?string => filled($state) ? bcrypt($state) : null)
+                            ->dehydrated(fn(?string $state): bool => filled($state)),
                     ]),
 
                 Section::make('Roles')
@@ -68,7 +72,7 @@ class UserForm
                                 'x-effect' => 'if (Array.isArray(state) && state.length > 0) { select?.closeDropdown() }',
                             ])
                             ->options(
-                                fn (): array => Role::query()
+                                fn(): array => Role::query()
                                     ->orderBy('name')
                                     ->pluck('name', 'name')
                                     ->toArray()
