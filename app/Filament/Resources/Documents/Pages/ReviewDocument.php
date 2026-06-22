@@ -89,9 +89,9 @@ class ReviewDocument extends Page implements HasForms
                                                 </div>
                                             </div>
                                             <div class="flex items-center space-x-2 shrink-0">
-                                                <a href="'.e(route('documents.preview', ['document' => $this->record, 'v' => $this->record->updated_at?->timestamp])).'" 
-                                                   target="_blank" 
-                                                   rel="noopener noreferrer" 
+                                                <a href="'.e(route('documents.preview', ['document' => $this->record, 'v' => $this->record->updated_at?->timestamp])).'"
+                                                   target="_blank"
+                                                   rel="noopener noreferrer"
                                                    class="btn-primary"
                                                 >
                                                     <svg class="h-3.5 w-3.5" width="14" height="14" style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -128,9 +128,9 @@ class ReviewDocument extends Page implements HasForms
                                             <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Mobile PDF Preview</p>
                                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">PDF preview cannot be embedded directly on mobile devices.</p>
                                         </div>
-                                        <a href="'.e(route('documents.preview', ['document' => $this->record, 'v' => $this->record->updated_at?->timestamp])).'" 
-                                           target="_blank" 
-                                           rel="noopener noreferrer" 
+                                        <a href="'.e(route('documents.preview', ['document' => $this->record, 'v' => $this->record->updated_at?->timestamp])).'"
+                                           target="_blank"
+                                           rel="noopener noreferrer"
                                            class="btn-mobile-primary"
                                         >
                                             Open PDF in New Tab
@@ -169,9 +169,9 @@ class ReviewDocument extends Page implements HasForms
                                                 <p class="font-semibold text-base text-gray-800 dark:text-gray-200">No Embedded Preview Available</p>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs mx-auto">This file type cannot be previewed directly inside the page. You can open it in a new window or download it to view.</p>
                                             </div>
-                                            <a href="'.e(route('documents.preview', ['document' => $this->record, 'v' => $this->record->updated_at?->timestamp])).'" 
-                                               target="_blank" 
-                                               rel="noopener noreferrer" 
+                                            <a href="'.e(route('documents.preview', ['document' => $this->record, 'v' => $this->record->updated_at?->timestamp])).'"
+                                               target="_blank"
+                                               rel="noopener noreferrer"
                                                class="btn-primary"
                                             >
                                                 <svg class="h-4 w-4" width="16" height="16" style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

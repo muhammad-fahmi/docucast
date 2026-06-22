@@ -44,10 +44,18 @@ Follow these steps to get the application running locally.
     cp .env.example .env
     ```
 
+    After copying, make sure to open the `.env` file and fill in or update any necessary environment variables for your local setup.
+
     Generate the application key:
 
     ```bash
     php artisan key:generate
+    ```
+
+    If your application uses Laravel Reverb, generate the necessary Reverb environment variables (`REVERB_APP_ID`, `REVERB_APP_KEY`, etc.):
+
+    ```bash
+    php artisan reverb:install
     ```
   </Step>
 

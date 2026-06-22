@@ -5,65 +5,71 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\Document;
-use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Foundation\Auth\User as AuthUser;
+use App\Models\User;
 
 class DocumentPolicy
 {
-    use HandlesAuthorization;
-
-    public function viewAny(AuthUser $authUser): bool
+    public function viewAny(User $user): bool
     {
-        return $authUser->can('ViewAny:Document');
+        return true;
     }
 
-    public function view(AuthUser $authUser, Document $document): bool
+    public function view(User $user, Document $document): bool
     {
-        return $authUser->can('View:Document');
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return true;
+        }
+
+        return $document->uploader_id === $user->id
+            || $document->recipients()->where('users.id', $user->id)->exists();
     }
 
-    public function create(AuthUser $authUser): bool
+    public function create(User $user): bool
     {
-        return $authUser->can('Create:Document');
+        return $user->hasAnyRole(['super_admin', 'admin', 'uploader']);
     }
 
-    public function update(AuthUser $authUser, Document $document): bool
+    public function update(User $user, Document $document): bool
     {
-        return $authUser->can('Update:Document');
+        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+            return true;
+        }
+
+        return $document->uploader_id === $user->id;
     }
 
-    public function delete(AuthUser $authUser, Document $document): bool
+    public function delete(User $user, Document $document): bool
     {
-        return $authUser->can('Delete:Document');
+        return $this->update($user, $document);
     }
 
-    public function restore(AuthUser $authUser, Document $document): bool
+    public function restore(User $user, Document $document): bool
     {
-        return $authUser->can('Restore:Document');
+        return $this->update($user, $document);
     }
 
-    public function forceDelete(AuthUser $authUser, Document $document): bool
+    public function forceDelete(User $user, Document $document): bool
     {
-        return $authUser->can('ForceDelete:Document');
+        return $this->update($user, $document);
     }
 
-    public function forceDeleteAny(AuthUser $authUser): bool
+    public function forceDeleteAny(User $user): bool
     {
-        return $authUser->can('ForceDeleteAny:Document');
+        return $user->can('ForceDeleteAny:Document');
     }
 
-    public function restoreAny(AuthUser $authUser): bool
+    public function restoreAny(User $user): bool
     {
-        return $authUser->can('RestoreAny:Document');
+        return $user->can('RestoreAny:Document');
     }
 
-    public function replicate(AuthUser $authUser, Document $document): bool
+    public function replicate(User $user, Document $document): bool
     {
-        return $authUser->can('Replicate:Document');
+        return $user->can('Replicate:Document');
     }
 
-    public function reorder(AuthUser $authUser): bool
+    public function reorder(User $user): bool
     {
-        return $authUser->can('Reorder:Document');
+        return $user->can('Reorder:Document');
     }
 }

@@ -5,10 +5,10 @@ namespace App\Filament\Resources\Documents\Pages;
 use App\Filament\Exports\RevisionHistoryExporter;
 use App\Filament\Resources\Documents\DocumentResource;
 use App\Models\RevisionHistory;
+use Filament\Actions\ExportAction as ActionsExportAction;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
-use Filament\Tables;
-use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -34,22 +34,22 @@ class DocumentHistory extends Page implements HasTable
         return $table
             ->query(RevisionHistory::query()->where('document_id', $this->record->id)->latest())
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime('d M Y H:i:s')
                     ->label('Date')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('commenter.name')
+                TextColumn::make('commenter.name')
                     ->label('User')
                     ->placeholder('System'),
-                Tables\Columns\TextColumn::make('action_type')
+                TextColumn::make('action_type')
                     ->label('Action')
                     ->badge(),
-                Tables\Columns\TextColumn::make('comments')
+                TextColumn::make('comments')
                     ->label('Details')
                     ->wrap(),
             ])
             ->headerActions([
-                ExportAction::make()
+                ActionsExportAction::make()
                     ->exporter(RevisionHistoryExporter::class),
             ]);
     }
