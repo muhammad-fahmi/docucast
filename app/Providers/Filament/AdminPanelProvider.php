@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\AvatarProviders\LocalSvgAvatarProvider;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Resources\Documents\Widgets\ApprovalDocumentWidget;
 use App\Livewire\Filament\DatabaseNotifications;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -43,11 +44,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->font('Arial')
             ->databaseNotifications(
-                condition: fn (): bool => auth()->check(),
+                condition: fn(): bool => auth()->check(),
                 livewireComponent: DatabaseNotifications::class,
             )
             ->databaseNotificationsPolling(null)
-            ->brandName(str('<div style="align-items: center; display: flex;"><img src="'.asset('logo_light.png').'" alt="DocuCast" style="height: 40px; margin-right: 10px;"> DocuCast</div>')->inlineMarkdown()->toHtmlString())
+            ->brandName(str('<div style="align-items: center; display: flex;"><img src="' . asset('logo_light.png') . '" alt="DocuCast" style="height: 40px; margin-right: 10px;"> DocuCast</div>')->inlineMarkdown()->toHtmlString())
             ->favicon(asset('logo_light.png'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -57,6 +58,9 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
+            ])
+            ->widgets([
+                ApprovalDocumentWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

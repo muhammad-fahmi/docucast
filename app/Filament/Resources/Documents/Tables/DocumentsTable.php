@@ -163,6 +163,7 @@ class DocumentsTable
                     ->infolist([
                         RepeatableEntry::make('reviews')
                             ->hiddenLabel()
+                            ->placeholder('No feedback has been submitted yet.')
                             ->schema([
                                 TextEntry::make('reviewer.name')
                                     ->weight(\Filament\Support\Enums\FontWeight::SemiBold)
