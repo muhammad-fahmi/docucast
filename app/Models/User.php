@@ -34,6 +34,7 @@ class User extends Authenticatable
         'job_title',
         'division_id',
         'telegram_chat_id',
+        'phone_number'
     ];
 
     /**

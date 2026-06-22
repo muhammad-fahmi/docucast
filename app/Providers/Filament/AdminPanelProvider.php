@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\AvatarProviders\LocalSvgAvatarProvider;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Resources\Documents\Widgets\ApprovalDocumentWidget;
 use App\Livewire\Filament\DatabaseNotifications;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Bjanczak\FilamentFlexFields\FilamentFlexFieldsPlugin;
@@ -59,6 +60,9 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class
+            ])
+            ->widgets([
+                ApprovalDocumentWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
