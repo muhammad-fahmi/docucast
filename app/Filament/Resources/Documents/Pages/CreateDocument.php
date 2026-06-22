@@ -47,7 +47,7 @@ class CreateDocument extends CreateRecord
             if ($recipients->isNotEmpty()) {
                 $dashboardNotification = FilamentNotification::make()
                     ->title('New Document Assigned')
-                    ->body(sprintf('A new document "%s" (%s) has been assigned to you.', $this->record->title, $this->record->unique_code))
+                    ->body(sprintf('A new document "%s" has been assigned to you.', $this->record->title,))
                     ->info()
                     ->viewData([
                         'detail' => [
