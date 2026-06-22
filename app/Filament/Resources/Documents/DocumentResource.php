@@ -6,7 +6,6 @@ use App\Filament\Resources\Documents\Pages\CreateDocument;
 use App\Filament\Resources\Documents\Pages\EditDocument;
 use App\Filament\Resources\Documents\Pages\ListDocuments;
 use App\Filament\Resources\Documents\Pages\ReviewDocument;
-use App\Filament\Resources\Documents\RelationManagers\VersionsRelationManager;
 use App\Filament\Resources\Documents\Schemas\DocumentForm;
 use App\Filament\Resources\Documents\Tables\DocumentsTable;
 use App\Models\Document;
@@ -27,11 +26,11 @@ class DocumentResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static bool $shouldSkipAuthorization = true;
+    protected static ?string $pluralModelLabel = 'Dokumen';
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Documents';
+        return 'Dokumen';
     }
 
     public static function form(Schema $schema): Schema
@@ -89,7 +88,7 @@ class DocumentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            VersionsRelationManager::class,
+            //
         ];
     }
 

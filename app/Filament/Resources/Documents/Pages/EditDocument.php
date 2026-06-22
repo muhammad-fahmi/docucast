@@ -9,16 +9,32 @@ use App\Services\DocumentRecipientResolver;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Override;
 
 class EditDocument extends EditRecord
 {
     protected static string $resource = DocumentResource::class;
 
+    protected static ?string $title = 'Detail Dokumen';
+
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()->label('Hapus')->icon('heroicon-o-trash'),
         ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveFormAction()->label('Simpan Perubahan')->icon('heroicon-o-clipboard-document-check'),
+            $this->getCancelFormAction()->label("Batal")->icon('heroicon-o-x-circle'),
+        ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 
     protected function mutateFormDataBeforeFill(array $data): array

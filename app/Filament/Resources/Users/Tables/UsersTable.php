@@ -9,6 +9,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UsersTable
 {
@@ -56,6 +57,7 @@ class UsersTable
                     ->relationship('roles', 'name'),
             ])
             ->recordActions([
+                Impersonate::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

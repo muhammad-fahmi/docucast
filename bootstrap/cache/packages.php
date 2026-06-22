@@ -57,6 +57,13 @@
       0 => 'Caresome\\FilamentAuthDesigner\\AuthDesignerServiceProvider',
     ),
   ),
+  'devletes/filament-timeline-view' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Devletes\\FilamentTimelineView\\TimelineViewServiceProvider',
+    ),
+  ),
   'filament/actions' => 
   array (
     'providers' => 
@@ -132,6 +139,20 @@
     'providers' => 
     array (
       0 => 'Hammadzafar05\\MobileBottomNav\\MobileBottomNavServiceProvider',
+    ),
+  ),
+  'janczakb/blade-gravity-icons' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Bjanczak\\BladeGravityIcons\\BladeGravityIconsServiceProvider',
+    ),
+  ),
+  'janczakb/filament-flex-fields' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Bjanczak\\FilamentFlexFields\\FilamentFlexFieldsServiceProvider',
     ),
   ),
   'jibaymcs/filament-tour' => 
@@ -218,6 +239,13 @@
     'providers' => 
     array (
       0 => 'Spatie\\Permission\\PermissionServiceProvider',
+    ),
+  ),
+  'stechstudio/filament-impersonate' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'STS\\FilamentImpersonate\\FilamentImpersonateServiceProvider',
     ),
   ),
 );
