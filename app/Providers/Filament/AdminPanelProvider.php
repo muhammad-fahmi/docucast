@@ -7,6 +7,7 @@ use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Resources\Documents\Widgets\ApprovalDocumentWidget;
 use App\Livewire\Filament\DatabaseNotifications;
+use Arnautdev\FilamentDeployIndicator\FilamentDeployIndicatorPlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Bjanczak\FilamentFlexFields\FilamentFlexFieldsPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -27,6 +28,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use JibayMcs\FilamentTour\FilamentTourPlugin;
+use pxlrbt\FilamentEnvironmentIndicator\EnvironmentIndicatorPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -44,7 +46,7 @@ class AdminPanelProvider extends PanelProvider
                 'danger' => Color::Rose,
                 'primary' => Color::Blue,
             ])
-            ->font('Arial')
+            ->font('Arial', provider: \Filament\FontProviders\LocalFontProvider::class)
             ->databaseNotifications(
                 condition: fn(): bool => Auth::check(),
                 livewireComponent: DatabaseNotifications::class,
@@ -81,6 +83,7 @@ class AdminPanelProvider extends PanelProvider
                     ->fromNavigation(limit: 4),
                 FilamentTourPlugin::make(),
                 FilamentFlexFieldsPlugin::make(),
+                EnvironmentIndicatorPlugin::make()->visible(fn(): bool => Auth::user()?->hasRole('super_admin') ?? false)
             ])
             ->authMiddleware([
                 Authenticate::class,

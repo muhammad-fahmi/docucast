@@ -11,12 +11,16 @@ class DocumentPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true;
+        return ! $user->hasRole('super_admin');
     }
 
     public function view(User $user, Document $document): bool
     {
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+        if ($user->hasRole('super_admin')) {
+            return false;
+        }
+
+        if ($user->hasRole('admin')) {
             return true;
         }
 
@@ -26,12 +30,20 @@ class DocumentPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'admin', 'uploader']);
+        if ($user->hasRole('super_admin')) {
+            return false;
+        }
+
+        return $user->hasAnyRole(['admin', 'uploader']);
     }
 
     public function update(User $user, Document $document): bool
     {
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+        if ($user->hasRole('super_admin')) {
+            return false;
+        }
+
+        if ($user->hasRole('admin')) {
             return true;
         }
 

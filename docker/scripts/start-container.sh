@@ -21,6 +21,7 @@ if [ -z "$APP_KEY" ]; then
     if [ ! -f .env ]; then
         echo "📝 No .env file found, creating a new one to store APP_KEY..."
         echo "APP_KEY=" > .env
+        echo "FLEX_FIELDS_PLAYGROUND=false" >> .env
     fi
     echo "🔑 Generating application key..."
     php artisan key:generate --no-interaction || true
