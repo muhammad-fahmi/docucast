@@ -65,6 +65,9 @@ class DocumentForm
                         AdvancedFileUpload::make('file_path')
                             ->label('Document File')
                             ->required()
+                            ->markAsRequired(false)
+                            ->hint('(*Wajib Diisi)')
+                            ->hintColor('danger')
                             ->directory('documents')
                             ->storeFileNamesIn('file_name')
                             ->pdfToolbar(true)
@@ -78,12 +81,18 @@ class DocumentForm
                     ->schema([
                         TextInput::make('title')
                             ->required()
+                            ->markAsRequired(false)
+                            ->hint('(*Wajib Diisi)')
+                            ->hintColor('danger')
                             ->label('Nama Dokumen')
                             ->maxLength(255)
                             ->placeholder('Masukkan nama dokumen disini')
                             ->columnSpanFull(),
                         RichEditor::make('description')
                             ->required()
+                            ->markAsRequired(false)
+                            ->hint('(*Wajib Diisi)')
+                            ->hintColor('danger')
                             ->label('Deskripsi Dokumen')
                             ->placeholder('Masukkan deskripsi disini')
                             ->columnSpanFull(),
@@ -95,7 +104,10 @@ class DocumentForm
                             ])
                             ->default('individual')
                             ->live()
-                            ->required(),
+                            ->required()
+                            ->markAsRequired(false)
+                            ->hint('(*Wajib Diisi)')
+                            ->hintColor('danger'),
 
                         Select::make('recipient_user_ids')
                             ->label('Pilih Penerima')
@@ -113,7 +125,10 @@ class DocumentForm
                             ->loadingMessage('Memuat Data Karyawan...')
                             ->searchPrompt('Masukkan Nama Karyawan')
                             ->visible(fn(Get $get): bool => $get('recipient_selection_type') === 'individual')
-                            ->required(fn(Get $get): bool => $get('recipient_selection_type') === 'individual'),
+                            ->required(fn(Get $get): bool => $get('recipient_selection_type') === 'individual')
+                            ->markAsRequired(false)
+                            ->hint('(*Wajib Diisi)')
+                            ->hintColor('danger'),
 
                         Select::make('recipient_division_ids')
                             ->label('Pilih Divisi')
@@ -126,7 +141,10 @@ class DocumentForm
                             )
                             ->searchable()
                             ->visible(fn(Get $get): bool => $get('recipient_selection_type') === 'division')
-                            ->required(fn(Get $get): bool => $get('recipient_selection_type') === 'division'),
+                            ->required(fn(Get $get): bool => $get('recipient_selection_type') === 'division')
+                            ->markAsRequired(false)
+                            ->hint('(*Wajib Diisi)')
+                            ->hintColor('danger'),
                         Section::make('Approval Settings')
                             ->columns(2)
                             ->schema([

@@ -9,6 +9,7 @@
     'App\\Filament\\Resources\\DocumentReviews\\Pages\\ListDocumentReviews' => 'App\\Filament\\Resources\\DocumentReviews\\Pages\\ListDocumentReviews',
     'App\\Filament\\Resources\\DocumentVersions\\Pages\\ListDocumentVersions' => 'App\\Filament\\Resources\\DocumentVersions\\Pages\\ListDocumentVersions',
     'App\\Filament\\Resources\\Documents\\Pages\\CreateDocument' => 'App\\Filament\\Resources\\Documents\\Pages\\CreateDocument',
+    'App\\Filament\\Resources\\Documents\\Pages\\DocumentDetail' => 'App\\Filament\\Resources\\Documents\\Pages\\DocumentDetail',
     'App\\Filament\\Resources\\Documents\\Pages\\DocumentHistory' => 'App\\Filament\\Resources\\Documents\\Pages\\DocumentHistory',
     'App\\Filament\\Resources\\Documents\\Pages\\EditDocument' => 'App\\Filament\\Resources\\Documents\\Pages\\EditDocument',
     'App\\Filament\\Resources\\Documents\\Pages\\ListDocuments' => 'App\\Filament\\Resources\\Documents\\Pages\\ListDocuments',
@@ -23,8 +24,8 @@
     'App\\Filament\\Pages\\Dashboard' => 'App\\Filament\\Pages\\Dashboard',
     'App\\Filament\\Pages\\Settings' => 'App\\Filament\\Pages\\Settings',
     'Filament\\Pages\\Dashboard' => 'Filament\\Pages\\Dashboard',
+    'App\\Filament\\Widgets\\AccountWidget' => 'App\\Filament\\Widgets\\AccountWidget',
     'App\\Filament\\Widgets\\DocumentStatsOverview' => 'App\\Filament\\Widgets\\DocumentStatsOverview',
-    'Filament\\Widgets\\AccountWidget' => 'Filament\\Widgets\\AccountWidget',
     'App\\Livewire\\Filament\\DatabaseNotifications' => 'App\\Livewire\\Filament\\DatabaseNotifications',
     'Filament\\Auth\\Pages\\EditProfile' => 'Filament\\Auth\\Pages\\EditProfile',
     'Filament\\Livewire\\GlobalSearch' => 'Filament\\Livewire\\GlobalSearch',
@@ -88,8 +89,9 @@
   ),
   'widgets' => 
   array (
+    '/var/www/html/app/Filament/Widgets/AccountWidget.php' => 'App\\Filament\\Widgets\\AccountWidget',
     '/var/www/html/app/Filament/Widgets/DocumentStatsOverview.php' => 'App\\Filament\\Widgets\\DocumentStatsOverview',
-    0 => 'Filament\\Widgets\\AccountWidget',
+    0 => 'App\\Filament\\Widgets\\AccountWidget',
     1 => 'App\\Filament\\Resources\\Documents\\Widgets\\ApprovalDocumentWidget',
   ),
   'widgetDirectories' => 
