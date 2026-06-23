@@ -9,6 +9,7 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -17,6 +18,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
@@ -37,12 +39,18 @@ class DocumentsTable
                 if ($user?->hasRole('recipient')) {
                     $query->withExists([
                         'recipients as is_recipient' => fn(Builder $recipientQuery): Builder => $recipientQuery->where('users.id', $user->id),
+                        // Hide the Review button if user has submitted ANY review (approved OR revision)
+                        // for the current version of the document. Button reappears when uploader
+                        // uploads a new version (new document_version_id).
                         'reviews as has_approved_review_by_user' => fn(Builder $reviewQuery): Builder => $reviewQuery
                             ->where('user_id', $user->id)
-                            ->where('status', 'approved'),
+                            ->whereColumn(
+                                'document_reviews.document_version_id',
+                                '=',
+                                DB::raw('(SELECT MAX(id) FROM document_versions WHERE document_versions.document_id = documents.id)')
+                            ),
                     ]);
                 }
-
                 return $query;
             })
             ->columns([
@@ -50,8 +58,8 @@ class DocumentsTable
                     ->label('Date')
                     ->date('d M Y')
                     ->sortable(),
-                TextColumn::make('unique_code')
-                    ->label('Unique Code')
+                TextColumn::make('title')
+                    ->label('Title')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('uploader.name')
@@ -159,7 +167,7 @@ class DocumentsTable
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
                     ->infolist([
-                        RepeatableEntry::make('reviews')
+                        RepeatableEntry::make('CurrentVersionReviews')
                             ->hiddenLabel()
                             ->placeholder('No feedback has been submitted yet.')
                             ->schema([
@@ -224,6 +232,7 @@ class DocumentsTable
                         return $user->hasAnyRole(['super_admin', 'admin']) || $record->uploader_id === $user->id;
                     }),
                 EditAction::make()
+                    ->label('Edit')
                     ->visible(function ($record): bool {
                         if (! Auth::check()) {
                             return false;
@@ -233,6 +242,15 @@ class DocumentsTable
 
                         return $user->hasAnyRole(['super_admin', 'admin']) || $record->uploader_id === $user->id;
                     }),
+                ViewAction::make('detail')
+                    ->label('Detail')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->url(
+                        fn(Model $record): string =>
+                        DocumentResource::getUrl('detail', ['record' => $record->id])
+                    )
+                    ->visible(fn($record): bool => Auth::check() && $record->uploader_id !== Auth::id())
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

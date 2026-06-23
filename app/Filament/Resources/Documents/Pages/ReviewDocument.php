@@ -269,22 +269,29 @@ class ReviewDocument extends Page implements HasForms
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            // Resolve the current (latest) version — this is what the user is reviewing
+            $currentVersionId = $document->versions()
+                ->max('id');
+
+            abort_unless($currentVersionId, 500, 'Document has no version.');
+
             $now = now();
 
             DocumentReview::query()->upsert(
                 [
                     [
-                        'document_id' => $document->id,
-                        'user_id' => $user->id,
-                        'status' => $formData['status'],
-                        'message' => $formData['message'] ?? null,
-                        'attachment_path' => $formData['attachment_path'] ?? null,
-                        'attachment_name' => $formData['attachment_name'] ?? null,
-                        'created_at' => $now,
-                        'updated_at' => $now,
+                        'document_id'         => $document->id,
+                        'document_version_id' => $currentVersionId,
+                        'user_id'             => $user->id,
+                        'status'              => $formData['status'],
+                        'message'             => $formData['message'] ?? null,
+                        'attachment_path'     => $formData['attachment_path'] ?? null,
+                        'attachment_name'     => $formData['attachment_name'] ?? null,
+                        'created_at'          => $now,
+                        'updated_at'          => $now,
                     ],
                 ],
-                ['document_id', 'user_id'],
+                ['document_version_id', 'user_id'],
                 ['status', 'message', 'attachment_path', 'attachment_name', 'updated_at'],
             );
 
@@ -292,6 +299,7 @@ class ReviewDocument extends Page implements HasForms
 
             // Fetch the review for notification
             $review = DocumentReview::where('document_id', $document->id)
+                ->where('document_version_id', $currentVersionId)
                 ->where('user_id', $user->id)
                 ->with('reviewer')
                 ->first();

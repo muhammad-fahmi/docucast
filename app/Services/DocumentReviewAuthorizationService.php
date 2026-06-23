@@ -12,7 +12,7 @@ class DocumentReviewAuthorizationService
     ) {}
 
     /**
-     * Check if user can submit a review for this document
+     * Check if user can submit a review for this document (current version)
      */
     public function canUserSubmitReview(Document $document, User $user): bool
     {
@@ -20,7 +20,7 @@ class DocumentReviewAuthorizationService
             return false;
         }
 
-        return ! $this->hasApprovedReview($document, $user);
+        return ! $this->hasReviewedCurrentVersion($document, $user);
     }
 
     /**
@@ -32,13 +32,15 @@ class DocumentReviewAuthorizationService
     }
 
     /**
-     * Allow a recipient to review again
+     * Allow a recipient to review again by deleting their review for the current version
      */
     public function allowReviewAgain(Document $document, int $recipientId): void
     {
+        $currentVersionId = $document->versions()->max('id');
+
         $document->reviews()
             ->where('user_id', $recipientId)
-            ->where('status', 'approved')
+            ->when($currentVersionId, fn ($q) => $q->where('document_version_id', $currentVersionId))
             ->delete();
 
         $this->statusService->updateStatus($document);
@@ -55,13 +57,21 @@ class DocumentReviewAuthorizationService
     }
 
     /**
-     * Check if user has submitted an approved review
+     * Check if user has already submitted any review (approved OR revision) for the current version.
+     * This blocks the review button until the uploader uploads a new version.
      */
-    private function hasApprovedReview(Document $document, User $user): bool
+    private function hasReviewedCurrentVersion(Document $document, User $user): bool
     {
+        $currentVersionId = $document->versions()->max('id');
+
+        if (! $currentVersionId) {
+            return false;
+        }
+
         return $document->reviews()
             ->where('user_id', $user->id)
-            ->where('status', 'approved')
+            ->where('document_version_id', $currentVersionId)
             ->exists();
     }
 }
+
