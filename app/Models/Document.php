@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class Document extends Model
@@ -67,7 +68,7 @@ class Document extends Model
                 $oldPath = $document->getOriginal('file_path');
                 // Archive the old file so it's not deleted by Filament FileUpload
                 if ($oldPath && Storage::disk('public')->exists($oldPath)) {
-                    $newPath = 'documents/archive/'.basename($oldPath);
+                    $newPath = 'documents/archive/' . basename($oldPath);
                     Storage::disk('public')->copy($oldPath, $newPath);
 
                     // Update previous versions to point to the archived file
@@ -80,13 +81,47 @@ class Document extends Model
 
         static::updated(function (self $document): void {
             if ($document->wasChanged('file_path')) {
+                $previousVersionId = $document->versions()->max('id');
+
                 $nextVersion = $document->versions()->max('version_number') + 1;
-                $document->versions()->create([
-                    'version_number' => $nextVersion,
-                    'file_storage_path' => $document->file_path,
-                    'original_filename' => $document->file_name,
-                    'uploaded_by' => auth()->id() ?? $document->uploader_id,
+                $newVersion = $document->versions()->create([
+                    'version_number'     => $nextVersion,
+                    'file_storage_path'  => $document->file_path,
+                    'original_filename'  => $document->file_name,
+                    'uploaded_by'        => auth()->id() ?? $document->uploader_id,
                 ]);
+
+                // Carry forward approvals from the previous version
+                // Recipients who approved v1 don't need to re-review v2
+                if ($previousVersionId) {
+                    $approvedReviews = DocumentReview::query()
+                        ->where('document_id', $document->id)
+                        ->where('document_version_id', $previousVersionId)
+                        ->where('status', 'approved')
+                        ->get();
+
+                    $now = now();
+
+                    foreach ($approvedReviews as $review) {
+                        DocumentReview::query()->upsert(
+                            [
+                                [
+                                    'document_id'         => $document->id,
+                                    'document_version_id' => $newVersion->id,
+                                    'user_id'             => $review->user_id,
+                                    'status'              => 'approved',
+                                    'message'             => null,
+                                    'attachment_path'     => null,
+                                    'attachment_name'     => null,
+                                    'created_at'          => $now,
+                                    'updated_at'          => $now,
+                                ],
+                            ],
+                            ['document_version_id', 'user_id'],
+                            ['status', 'message', 'attachment_path', 'attachment_name', 'updated_at'],
+                        );
+                    }
+                }
             }
         });
     }
@@ -129,5 +164,14 @@ class Document extends Model
     public static function formatUniqueCode(int $uploaderId, string $datePart, int $documentId): string
     {
         return sprintf('#%d%s%06d', $uploaderId, $datePart, $documentId);
+    }
+
+    public function currentVersionReviews(): HasMany
+    {
+        return $this->hasMany(DocumentReview::class)
+            ->where(
+                'document_version_id',
+                DB::raw('(SELECT MAX(id) FROM document_versions WHERE document_versions.document_id = ' . $this->id . ')')
+            );
     }
 }
