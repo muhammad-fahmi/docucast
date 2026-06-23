@@ -384,6 +384,63 @@
                         </div>
                     </div>
                 @endif
+
+                {{-- Past Versions --}}
+                @php $versions = $record->versions()->with('uploader')->orderByDesc('version_number')->get(); @endphp
+                @if ($versions->isNotEmpty())
+                    <hr class="detail-divider">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+                            <svg style="width:14px;height:14px;flex-shrink:0;color:#9ca3af;" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                            </svg>
+                            <p class="detail-info-label" style="margin-bottom:0;">Version History
+                                ({{ $versions->count() }})</p>
+                        </div>
+                        <div style="border:1px solid 97c2fc;border-radius:0.625rem;overflow:hidden;">
+                            @foreach ($versions as $version)
+                                <div
+                                    style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;padding:0.65rem 0.875rem;font-size:0.8125rem;solid rgb(229,231,235);background:{{ $loop->first ? '#97c2fc' : 'transparent' }};">
+                                    {{-- Version badge + info --}}
+                                    <div style="display:flex;align-items:center;gap:0.75rem;min-width:0;flex:1;">
+                                        <span
+                                            style="flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;min-width:2.25rem;padding:0.2rem 0.4rem;border-radius:0.375rem;font-size:0.7rem;font-weight:700;background:{{ $loop->first ? '#dbeafe' : '#f3f4f6' }};color:{{ $loop->first ? '#1d4ed8' : '#6b7280' }};">
+                                            v{{ $version->version_number }}
+                                            @if ($loop->first)
+                                                <span style="margin-left:3px;font-size:0.6rem;opacity:0.7;">★</span>
+                                            @endif
+                                        </span>
+                                        <div style="min-width:0;">
+                                            <p style="margin:0;font-weight:600;color:{{ $loop->first ? 'rgb(17,24,39)' : '#97c2fc' }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;"
+                                                title="{{ $version->original_filename }}">
+                                                {{ $version->original_filename ?: 'Document v' . $version->version_number }}
+                                            </p>
+                                            <p style="margin:0.1rem 0 0;font-size:0.7rem;color:rgb(107,114,128);">
+                                                {{ $version->created_at->format('d M Y') }} ·
+                                                {{ $version->uploader?->name ?? '—' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {{-- Download button --}}
+                                    <a href="{{ route('documents.preview', ['document' => $record, 'version' => $version->version_number]) }}"
+                                        target="_blank" rel="noopener noreferrer"
+                                        style="flex-shrink:0;display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.6rem;border-radius:0.4rem;border:1px solid rgb(209,213,219);background:white;color:rgb(55,65,81);font-size:0.7rem;font-weight:600;text-decoration:none;transition:background 0.15s;"
+                                        onmouseover="this.style.background='rgb(249,250,251)'"
+                                        onmouseout="this.style.background='white'">
+                                        <svg style="width:11px;height:11px;" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        Download
+                                    </a>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
