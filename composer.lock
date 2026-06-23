@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2cfb9b8d3f7c44a50864a87032b99ef7",
+    "content-hash": "b43fa606d491757795e977e259edac00",
     "packages": [
         {
             "name": "asmit/filament-upload",
@@ -2251,16 +2251,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "9.0.32",
+            "version": "9.0.33",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "0945459d64ac6f583825bd5b9fa0645bfe791c72"
+                "reference": "13bd0e7a835dcc80315c3d389b34349f4a3214f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/0945459d64ac6f583825bd5b9fa0645bfe791c72",
-                "reference": "0945459d64ac6f583825bd5b9fa0645bfe791c72",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/13bd0e7a835dcc80315c3d389b34349f4a3214f9",
+                "reference": "13bd0e7a835dcc80315c3d389b34349f4a3214f9",
                 "shasum": ""
             },
             "require": {
@@ -2323,7 +2323,7 @@
                 "issues": "https://github.com/giggsey/libphonenumber-for-php/issues",
                 "source": "https://github.com/giggsey/libphonenumber-for-php"
             },
-            "time": "2026-06-05T07:34:44+00:00"
+            "time": "2026-06-22T10:35:35+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -2999,16 +2999,16 @@
         },
         {
             "name": "janczakb/filament-flex-fields",
-            "version": "v2.7.0",
+            "version": "v2.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/janczakb/filament-flex-fields.git",
-                "reference": "9c6c101627c57a399d7f4663679e914eb1d97cc4"
+                "reference": "7e58e9803a951128a44dead8ce7ecfddd9bc4b6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/janczakb/filament-flex-fields/zipball/9c6c101627c57a399d7f4663679e914eb1d97cc4",
-                "reference": "9c6c101627c57a399d7f4663679e914eb1d97cc4",
+                "url": "https://api.github.com/repos/janczakb/filament-flex-fields/zipball/7e58e9803a951128a44dead8ce7ecfddd9bc4b6b",
+                "reference": "7e58e9803a951128a44dead8ce7ecfddd9bc4b6b",
                 "shasum": ""
             },
             "require": {
@@ -3022,6 +3022,7 @@
                 "pestphp/pest": "^4.0",
                 "pestphp/pest-plugin-laravel": "^4.0",
                 "phpstan/phpstan": "^2.0",
+                "spatie/laravel-medialibrary": "^11.0",
                 "spatie/laravel-sluggable": "^4.0"
             },
             "type": "library",
@@ -3090,7 +3091,7 @@
             ],
             "support": {
                 "issues": "https://github.com/janczakb/filament-flex-fields/issues",
-                "source": "https://github.com/janczakb/filament-flex-fields/tree/v2.7.0"
+                "source": "https://github.com/janczakb/filament-flex-fields/tree/v2.7.2"
             },
             "funding": [
                 {
@@ -3098,7 +3099,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-06-17T21:35:51+00:00"
+            "time": "2026-06-21T18:45:10+00:00"
         },
         {
             "name": "jibaymcs/filament-tour",
@@ -6300,6 +6301,68 @@
                 "source": "https://github.com/pusher/pusher-http-php/tree/7.2.8"
             },
             "time": "2026-05-18T13:11:36+00:00"
+        },
+        {
+            "name": "pxlrbt/filament-environment-indicator",
+            "version": "v3.5.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pxlrbt/filament-environment-indicator.git",
+                "reference": "0e242ca10db6a0955b16624cbcbefa63f1f3e4a1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pxlrbt/filament-environment-indicator/zipball/0e242ca10db6a0955b16624cbcbefa63f1f3e4a1",
+                "reference": "0e242ca10db6a0955b16624cbcbefa63f1f3e4a1",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.0|^5.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.10"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "\\pxlrbt\\FilamentEnvironmentIndicator\\FilamentEnvironmentIndicatorServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "pxlrbt\\FilamentEnvironmentIndicator\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dennis Koch",
+                    "email": "hey@denniskoch.dev"
+                }
+            ],
+            "description": "Indicator for the current environment inside Filament",
+            "keywords": [
+                "environment indicator",
+                "filament",
+                "laravel-filament"
+            ],
+            "support": {
+                "issues": "https://github.com/pxlrbt/filament-environment-indicator/issues",
+                "source": "https://github.com/pxlrbt/filament-environment-indicator/tree/v3.5.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/pxlrbt",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-03-09T09:55:23+00:00"
         },
         {
             "name": "ralouphie/getallheaders",

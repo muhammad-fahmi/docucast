@@ -30,7 +30,7 @@ class DocumentReviewResource extends Resource
 
     public static function canAccess(): bool
     {
-        return Auth::check() && Auth::user()->hasAnyRole(['super_admin', 'admin']);
+        return Auth::check() && Auth::user()->hasRole('admin');
     }
 
     public static function canCreate(): bool

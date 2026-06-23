@@ -25,6 +25,7 @@
         "laravel/reverb": "^1.0",
         "laravel/tinker": "^2.10.1",
         "predis/predis": "^3.4",
+        "pxlrbt/filament-environment-indicator": "^3.5",
         "shuchkin/simplexlsxgen": "*",
         "stechstudio/filament-impersonate": "^5.5",
         "tinify/tinify": "^1.6"
