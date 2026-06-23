@@ -37,12 +37,18 @@ class DocumentsTable
                 if ($user?->hasRole('recipient')) {
                     $query->withExists([
                         'recipients as is_recipient' => fn(Builder $recipientQuery): Builder => $recipientQuery->where('users.id', $user->id),
+                        // Hide the Review button if user has submitted ANY review (approved OR revision)
+                        // for the current version of the document. Button reappears when uploader
+                        // uploads a new version (new document_version_id).
                         'reviews as has_approved_review_by_user' => fn(Builder $reviewQuery): Builder => $reviewQuery
                             ->where('user_id', $user->id)
-                            ->where('status', 'approved'),
+                            ->whereColumn(
+                                'document_reviews.document_version_id',
+                                '=',
+                                DB::raw('(SELECT MAX(id) FROM document_versions WHERE document_versions.document_id = documents.id)')
+                            ),
                     ]);
                 }
-
                 return $query;
             })
             ->columns([
@@ -159,7 +165,7 @@ class DocumentsTable
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
                     ->infolist([
-                        RepeatableEntry::make('reviews')
+                        RepeatableEntry::make('CurrentVersionReviews')
                             ->hiddenLabel()
                             ->placeholder('No feedback has been submitted yet.')
                             ->schema([

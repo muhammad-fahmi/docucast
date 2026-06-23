@@ -13,6 +13,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Widgets\TableWidget as BaseWidget;
 
+use Illuminate\Support\Facades\DB;
+
 class ApprovalDocumentWidget extends BaseWidget
 {
     protected static ?int $sort = 1;
@@ -26,7 +28,6 @@ class ApprovalDocumentWidget extends BaseWidget
         return $table
             ->query(function (): Builder {
                 $user = Auth::user();
-
                 $query = Document::query()
                     ->with(['uploader:id,name']);
 
@@ -38,7 +39,11 @@ class ApprovalDocumentWidget extends BaseWidget
                             'reviews',
                             fn($q) => $q
                                 ->where('user_id', $user->id)
-                                ->where('status', 'approved')
+                                ->whereColumn(
+                                    'document_reviews.document_version_id',
+                                    '=',
+                                    DB::raw('(SELECT MAX(id) FROM document_versions WHERE document_versions.document_id = documents.id)')
+                                )
                         );
                 } elseif ($user->hasAnyRole(['super_admin', 'admin'])) {
                     $query->where('status', 'in_review');
