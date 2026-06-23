@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -83,5 +85,12 @@ class User extends Authenticatable
     public function routeNotificationForTelegram()
     {
         return $this->telegram_chat_id;
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Allow all active users to access the admin panel for now
+        // You can add more complex role-based logic here later if needed
+        return true;
     }
 }

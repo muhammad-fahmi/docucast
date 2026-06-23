@@ -7,6 +7,7 @@ use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Resources\Documents\Widgets\ApprovalDocumentWidget;
 use App\Livewire\Filament\DatabaseNotifications;
+use Arnautdev\FilamentDeployIndicator\FilamentDeployIndicatorPlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Bjanczak\FilamentFlexFields\FilamentFlexFieldsPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -17,7 +18,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
+use App\Filament\Widgets\AccountWidget;
 use Hammadzafar05\MobileBottomNav\MobileBottomNav;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -27,6 +28,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use JibayMcs\FilamentTour\FilamentTourPlugin;
+use pxlrbt\FilamentEnvironmentIndicator\EnvironmentIndicatorPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -44,7 +46,7 @@ class AdminPanelProvider extends PanelProvider
                 'danger' => Color::Rose,
                 'primary' => Color::Blue,
             ])
-            ->font('Arial')
+            ->font('Poppins')
             ->databaseNotifications(
                 condition: fn(): bool => Auth::check(),
                 livewireComponent: DatabaseNotifications::class,
@@ -59,9 +61,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class
-            ])
-            ->widgets([
+                AccountWidget::class,
                 ApprovalDocumentWidget::class,
             ])
             ->middleware([
@@ -81,6 +81,7 @@ class AdminPanelProvider extends PanelProvider
                     ->fromNavigation(limit: 4),
                 FilamentTourPlugin::make(),
                 FilamentFlexFieldsPlugin::make(),
+                EnvironmentIndicatorPlugin::make()->visible(fn(): bool => Auth::user()?->hasRole('super_admin') ?? false)
             ])
             ->authMiddleware([
                 Authenticate::class,

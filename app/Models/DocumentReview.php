@@ -9,6 +9,7 @@ class DocumentReview extends Model
 {
     protected $fillable = [
         'document_id',
+        'document_version_id',
         'user_id',
         'status',
         'message',
@@ -21,8 +22,14 @@ class DocumentReview extends Model
         return $this->belongsTo(Document::class);
     }
 
+    public function documentVersion(): BelongsTo
+    {
+        return $this->belongsTo(DocumentVersion::class, 'document_version_id');
+    }
+
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 }
+

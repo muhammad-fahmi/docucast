@@ -66,10 +66,23 @@ class DocumentStatusService
      */
     private function getReviewSummary(Document $document): array
     {
+        $currentVersionId = DB::table('document_versions')
+            ->where('document_id', $document->id)
+            ->max('id');
+
+        if (! $currentVersionId) {
+            return [
+                'totalRecipients' => 0,
+                'approvedCount'   => 0,
+                'hasRevision'     => false,
+            ];
+        }
+
         $result = DB::table('document_recipients')
-            ->leftJoin('document_reviews', function ($join): void {
+            ->leftJoin('document_reviews', function ($join) use ($currentVersionId): void {
                 $join->on('document_reviews.document_id', '=', 'document_recipients.document_id')
-                    ->on('document_reviews.user_id', '=', 'document_recipients.user_id');
+                    ->on('document_reviews.user_id', '=', 'document_recipients.user_id')
+                    ->where('document_reviews.document_version_id', '=', $currentVersionId); // ← scope to current version
             })
             ->where('document_recipients.document_id', $document->id)
             ->selectRaw('COUNT(DISTINCT document_recipients.user_id) AS total_recipients')
@@ -77,18 +90,10 @@ class DocumentStatusService
             ->selectRaw("MAX(CASE WHEN document_reviews.status = 'revision' THEN 1 ELSE 0 END) AS has_revision")
             ->first();
 
-        if ($result === null) {
-            return [
-                'totalRecipients' => 0,
-                'approvedCount' => 0,
-                'hasRevision' => false,
-            ];
-        }
-
         return [
             'totalRecipients' => (int) ($result->total_recipients ?? 0),
-            'approvedCount' => (int) ($result->approved_recipients ?? 0),
-            'hasRevision' => (bool) ($result->has_revision ?? false),
+            'approvedCount'   => (int) ($result->approved_recipients ?? 0),
+            'hasRevision'     => (bool) ($result->has_revision ?? false),
         ];
     }
 }

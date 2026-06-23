@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DocumentVersion extends Model
 {
@@ -23,4 +24,11 @@ class DocumentVersion extends Model
     {
         return $this->belongsTo(User::class, 'uploaded_by');
     }
+
+    // Reviews submitted for this specific version
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(DocumentReview::class, 'document_version_id');
+    }
 }
+

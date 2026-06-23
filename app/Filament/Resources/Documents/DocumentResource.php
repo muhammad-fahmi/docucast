@@ -45,7 +45,7 @@ class DocumentResource extends Resource
 
     public static function canCreate(): bool
     {
-        return Auth::check() && Auth::user()->hasAnyRole(['super_admin', 'admin', 'uploader']);
+        return Auth::check() && Auth::user()->hasAnyRole(['admin', 'uploader']);
     }
 
     public static function canEdit(Model $record): bool
@@ -56,7 +56,7 @@ class DocumentResource extends Resource
 
         $user = Auth::user();
 
-        return $user->hasAnyRole(['super_admin', 'admin']) || $record->uploader_id === $user->id;
+        return $user->hasRole('admin') || $record->uploader_id === $user->id;
     }
 
     public static function canDelete(Model $record): bool
@@ -73,7 +73,7 @@ class DocumentResource extends Resource
         $user = Auth::user();
         $query = parent::getEloquentQuery();
 
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+        if ($user->hasRole('admin')) {
             return $query;
         }
 
@@ -81,7 +81,7 @@ class DocumentResource extends Resource
 
         return $query->where(function (Builder $q) use ($userId): void {
             $q->where('uploader_id', $userId)
-                ->orWhereHas('recipients', fn (Builder $rq) => $rq->where('users.id', $userId));
+                ->orWhereHas('recipients', fn(Builder $rq) => $rq->where('users.id', $userId));
         });
     }
 
@@ -100,6 +100,7 @@ class DocumentResource extends Resource
             'edit' => EditDocument::route('/{record}/edit'),
             'review' => ReviewDocument::route('/{record}/review'),
             'history' => Pages\DocumentHistory::route('/{record}/history'),
+            'detail' => Pages\DocumentDetail::route('/{record}/detail'),
         ];
     }
 }
