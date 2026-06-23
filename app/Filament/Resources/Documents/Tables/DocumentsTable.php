@@ -9,6 +9,7 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -17,6 +18,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
@@ -56,8 +58,8 @@ class DocumentsTable
                     ->label('Date')
                     ->date('d M Y')
                     ->sortable(),
-                TextColumn::make('unique_code')
-                    ->label('Unique Code')
+                TextColumn::make('title')
+                    ->label('Title')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('uploader.name')
@@ -230,6 +232,7 @@ class DocumentsTable
                         return $user->hasAnyRole(['super_admin', 'admin']) || $record->uploader_id === $user->id;
                     }),
                 EditAction::make()
+                    ->label('Edit')
                     ->visible(function ($record): bool {
                         if (! Auth::check()) {
                             return false;
@@ -239,6 +242,15 @@ class DocumentsTable
 
                         return $user->hasAnyRole(['super_admin', 'admin']) || $record->uploader_id === $user->id;
                     }),
+                ViewAction::make('detail')
+                    ->label('Detail')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->url(
+                        fn(Model $record): string =>
+                        DocumentResource::getUrl('detail', ['record' => $record->id])
+                    )
+                    ->visible(fn($record): bool => Auth::check() && $record->uploader_id !== Auth::id())
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

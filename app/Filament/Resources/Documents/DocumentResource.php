@@ -81,7 +81,7 @@ class DocumentResource extends Resource
 
         return $query->where(function (Builder $q) use ($userId): void {
             $q->where('uploader_id', $userId)
-                ->orWhereHas('recipients', fn (Builder $rq) => $rq->where('users.id', $userId));
+                ->orWhereHas('recipients', fn(Builder $rq) => $rq->where('users.id', $userId));
         });
     }
 
@@ -100,6 +100,7 @@ class DocumentResource extends Resource
             'edit' => EditDocument::route('/{record}/edit'),
             'review' => ReviewDocument::route('/{record}/review'),
             'history' => Pages\DocumentHistory::route('/{record}/history'),
+            'detail' => Pages\DocumentDetail::route('/{record}/detail'),
         ];
     }
 }
