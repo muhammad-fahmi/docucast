@@ -11,6 +11,14 @@ class ListDocuments extends ListRecords
 {
     protected static string $resource = DocumentResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            filament()->getUrl() => 'Dashboard',
+            DocumentResource::getUrl('index') => 'Dokumen',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

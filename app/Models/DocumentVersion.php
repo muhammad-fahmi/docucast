@@ -9,8 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class DocumentVersion extends Model
 {
     protected $fillable = [
-        'document_id', 'version_number', 'file_storage_path',
-        'original_filename', 'uploaded_by',
+        'document_id',
+        'version_number',
+        'file_storage_path',
+        'original_filename',
+        'uploaded_by',
     ];
 
     // Links back to the master stable ID
@@ -31,4 +34,3 @@ class DocumentVersion extends Model
         return $this->hasMany(DocumentReview::class, 'document_version_id');
     }
 }
-

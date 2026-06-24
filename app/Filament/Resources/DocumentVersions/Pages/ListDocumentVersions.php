@@ -16,4 +16,12 @@ class ListDocumentVersions extends ListRecords
             // CreateAction::make(),
         ];
     }
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            filament()->getUrl() => 'Dashboard',
+            DocumentVersionResource::getUrl('index') => 'Semua Versi',
+        ];
+    }
 }

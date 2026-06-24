@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\DocumentVersions;
 
-use App\Filament\Resources\DocumentVersions\Pages\CreateDocumentVersion;
-use App\Filament\Resources\DocumentVersions\Pages\EditDocumentVersion;
 use App\Filament\Resources\DocumentVersions\Pages\ListDocumentVersions;
 use App\Filament\Resources\DocumentVersions\Schemas\DocumentVersionForm;
 use App\Filament\Resources\DocumentVersions\Tables\DocumentVersionsTable;
@@ -13,21 +11,22 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class DocumentVersionResource extends Resource
 {
     protected static ?string $model = DocumentVersion::class;
 
-    protected static ?string $navigationLabel = 'Version List';
+    protected static ?string $pluralModelLabel = 'Semua Versi';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Documents';
+        return 'Dokumen';
     }
 
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
         $user = auth()->user();

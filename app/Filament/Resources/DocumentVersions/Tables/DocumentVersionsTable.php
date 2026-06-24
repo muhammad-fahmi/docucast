@@ -2,49 +2,52 @@
 
 namespace App\Filament\Resources\DocumentVersions\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use App\Models\DocumentVersion;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class DocumentVersionsTable
 {
     public static function configure(Table $table): Table
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $table = $table
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('document.title')
+                TextColumn::make('document.title')
                     ->label('Document Title')
                     ->searchable()
                     ->sortable(),
-                
-                \Filament\Tables\Columns\TextColumn::make('version_number')
+
+                TextColumn::make('version_number')
                     ->label('Version')
                     ->badge()
                     ->sortable(),
 
-                \Filament\Tables\Columns\TextColumn::make('original_filename')
+                TextColumn::make('original_filename')
                     ->label('File')
                     ->searchable()
                     ->icon('heroicon-o-document')
-                    ->url(fn (\App\Models\DocumentVersion $record): string => \Illuminate\Support\Facades\Storage::disk('public')->url($record->file_storage_path))
+                    ->url(fn (DocumentVersion $record): string => route('documents.preview', [
+                        'document' => $record->document_id,
+                        'version' => $record->version_number,
+                    ]))
                     ->openUrlInNewTab(),
 
-                \Filament\Tables\Columns\TextColumn::make('document.uploader.name')
+                TextColumn::make('document.uploader.name')
                     ->label('Uploader')
                     ->searchable()
                     ->sortable()
-                    ->visible(fn () => auth()->user()->hasAnyRole(['super_admin', 'admin', 'recipient'])),
+                    ->visible(fn () => $user->hasAnyRole(['super_admin', 'admin', 'recipient'])),
 
-                \Filament\Tables\Columns\TextColumn::make('document.recipients.name')
+                TextColumn::make('document.recipients.name')
                     ->label('Recipients')
                     ->badge()
                     ->searchable()
-                    ->visible(fn () => auth()->user()->hasAnyRole(['super_admin', 'admin', 'uploader'])),
+                    ->visible(fn () => $user->hasAnyRole(['super_admin', 'admin', 'uploader'])),
 
-                \Filament\Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Uploaded At')
                     ->dateTime()
                     ->sortable(),
@@ -61,9 +64,9 @@ class DocumentVersionsTable
             ]);
 
         // Group by Uploader if the user is a recipient
-        if ($user->hasRole('recipient') && !$user->hasAnyRole(['super_admin', 'admin'])) {
-            $table->defaultGroup('document.uploader.name');
-        }
+        // if ($user->hasRole('recipient') && !$user->hasAnyRole(['super_admin', 'admin'])) {
+        //     $table->defaultGroup('document.uploader.name');
+        // }
 
         return $table;
     }
