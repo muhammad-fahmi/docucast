@@ -118,8 +118,8 @@ services:
       - 9000
     volumes:
       # Mount project directory for local development; persist storage
-      # - .:/var/www/html
-      # - /var/www/html/vendor
+      - .:/var/www/html
+      - /var/www/html/vendor
       - app-storage:/var/www/html/storage
     networks:
       - internal
@@ -138,8 +138,8 @@ services:
       - app
     volumes:
       # Mount project directory for local development; share storage
-      # - .:/var/www/html
-      # - /var/www/html/vendor
+      - .:/var/www/html
+      - /var/www/html/vendor
       - app-storage:/var/www/html/storage
     healthcheck:
       test:
@@ -191,8 +191,8 @@ services:
       start_period: 15s
     volumes:
       # Mount project directory for local development; share storage
-      # - .:/var/www/html
-      # - /var/www/html/vendor
+      - .:/var/www/html
+      - /var/www/html/vendor
       - app-storage:/var/www/html/storage
     labels:
       # Traefik configuration for routing websocket connections through port 80/443

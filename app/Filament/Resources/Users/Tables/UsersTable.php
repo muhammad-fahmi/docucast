@@ -16,7 +16,7 @@ class UsersTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['division:id,name', 'roles:id,name']))
+            ->modifyQueryUsing(fn(Builder $query): Builder => $query->with(['division:id,name', 'roles:id,name']))
             ->columns([
                 TextColumn::make('employee_no')
                     ->label('Employee No.')
@@ -26,7 +26,7 @@ class UsersTable
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('nik')
-                    ->label('NIK')
+                    ->label('NPK')
                     ->searchable(),
                 TextColumn::make('job_title')
                     ->label('Job Title')

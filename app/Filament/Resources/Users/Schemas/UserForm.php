@@ -24,7 +24,7 @@ class UserForm
                             ->required()
                             ->maxLength(255),
                         TextInput::make('nik')
-                            ->label('NIK')
+                            ->label('NPK')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
@@ -39,8 +39,10 @@ class UserForm
                             ->relationship('division', 'name')
                             ->searchable()
                             ->preload(),
-                        DateTimePicker::make('email_verified_at')
-                            ->label('Email Verified At'),
+                        TextInput::make('email')
+                            ->label('Email')
+                            ->maxLength(255)
+                            ->unique(ignoreRecord: true),
                         TextInput::make('telegram_chat_id')
                             ->label('Telegram Chat ID')
                             ->maxLength(255)
