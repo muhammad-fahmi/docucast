@@ -11,11 +11,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            DivisionSeeder::class,
-            ShieldSeeder::class,
-            RoleAndPermissionSeeder::class,
-            UserFromCsvSeeder::class,
-        ]);
+        if (\App\Models\User::query()->count() === 0) {
+            $this->call([
+                DivisionSeeder::class,
+                ShieldSeeder::class,
+                RoleAndPermissionSeeder::class,
+                UserFromCsvSeeder::class,
+            ]);
+        } else {
+            $this->command->info('⏭️  Database already seeded. Skipping seeders...');
+        }
     }
 }
