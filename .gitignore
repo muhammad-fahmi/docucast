@@ -52,3 +52,6 @@ skills/
 .mcp.json
 .opencode.json
 data_karyawan.csv
+
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
