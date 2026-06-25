@@ -30,6 +30,11 @@ class UserFromCsvSeeder extends Seeder
 
     public function run(): void
     {
+        if (User::whereNotNull('employee_no')->exists()) {
+            $this->command->info('Users from CSV already exist. User from CSV seeding skipped.');
+            return;
+        }
+
         $divisions = Division::all()->keyBy('slug');
         $csvPath = base_path('data_karyawan.csv');
 

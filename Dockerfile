@@ -3,10 +3,15 @@
 
 # ==========================================
 # Stage 1a: Vendor dev dependencies
+# Purpose: Install development dependencies for Laravel
+# In this point not copy source code, only composer.json and composer.lock
+# if use this stage for local, you must run npm install locally or via a separate container for hot-reloading.
+# This is a good practice for multi-environment deployments
 # ==========================================
 FROM composer:2 AS vendor-dev
 WORKDIR /app
 COPY composer.json composer.lock* ./
+# Install dev dependencies for Laravel
 RUN --mount=type=cache,target=/tmp/cache \
     composer install \
     --no-scripts \
@@ -15,28 +20,48 @@ RUN --mount=type=cache,target=/tmp/cache \
 
 # ==========================================
 # Stage 1b: Vendor prod dependencies
+# Purpose: Install production dependencies for Laravel
+# In this point not copy source code, only composer.json and composer.lock
+# if use this stage for local, you must run npm install locally or via a separate container for hot-reloading.
+# This is a good practice for multi-environment deployments
 # ==========================================
 FROM composer:2 AS vendor-prod
 WORKDIR /app
 COPY composer.json composer.lock* ./
 RUN --mount=type=cache,target=/tmp/cache \
     composer install \
+    # Install only production dependencies
     --no-dev \
+    # Disable scripts from running, they will be run later
     --no-scripts \
+    # Install dependencies in production mode
     --prefer-dist \
+    # Ignore platform requirements, they will be handled by the Docker environment
     --ignore-platform-reqs
 
 # ==========================================
 # Stage 2: Frontend assets compilation
+# Purpose: Compile frontend assets for Laravel
+# This stage is used to compile frontend assets for Laravel
+# The assets are compiled in this stage and then copied to the final image
 # ==========================================
 FROM node:22-alpine AS frontend
 WORKDIR /app
 
+# Copy package.json and package-lock.json to the container
 COPY package.json package-lock.json* ./
+# Install node dependencies for Laravel
 RUN --mount=type=cache,target=/root/.npm \
+    # Set alpine error configuration
+    # set -eux is a shell command that does the following:
+    # - e: Exit immediately if a command exits with a non-zero status.
+    # - u: Treat unset variables as an error and exit immediately.
+    # - x: Print commands and their arguments as they are executed.
     set -eux; \
+    # Set the npm configuration for Laravel
     npm config set fund false; \
     npm config set audit false; \
+    # Install node dependencies for Laravel
     if [ -f package-lock.json ]; then \
     npm ci; \
     else \
@@ -118,7 +143,7 @@ CMD ["/usr/local/bin/start-container.sh"]
 FROM app-base AS local
 # Copy dev vendor
 COPY --chown=www-data:www-data --from=vendor-dev /app/vendor ./vendor
-# We don't copy public/build or optimize here because we expect source code to be mounted 
+# We don't copy public/build or optimize here because we expect source code to be mounted
 # and Vite/npm to be run locally or via a separate container for hot-reloading.
 # But we copy the rest of the app in case it's not mounted.
 COPY --chown=www-data:www-data . .
@@ -134,14 +159,14 @@ RUN mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions 
 FROM app-base AS staging
 # Configure OPcache for performance
 RUN { \
-        echo 'opcache.memory_consumption=256'; \
-        echo 'opcache.interned_strings_buffer=16'; \
-        echo 'opcache.max_accelerated_files=20000'; \
-        echo 'opcache.revalidate_freq=0'; \
-        echo 'opcache.validate_timestamps=1'; \
-        echo 'opcache.enable_cli=1'; \
-        echo 'opcache.jit=tracing'; \
-        echo 'opcache.jit_buffer_size=100M'; \
+    echo 'opcache.memory_consumption=256'; \
+    echo 'opcache.interned_strings_buffer=16'; \
+    echo 'opcache.max_accelerated_files=20000'; \
+    echo 'opcache.revalidate_freq=0'; \
+    echo 'opcache.validate_timestamps=1'; \
+    echo 'opcache.enable_cli=1'; \
+    echo 'opcache.jit=tracing'; \
+    echo 'opcache.jit_buffer_size=100M'; \
     } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
 COPY --chown=www-data:www-data . .

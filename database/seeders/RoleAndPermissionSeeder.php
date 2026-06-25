@@ -11,6 +11,11 @@ class RoleAndPermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        if (User::where('nik', 'superadmin')->exists()) {
+            $this->command->info('Default superadmin user already exists. Role and Permission seeding skipped.');
+            return;
+        }
+
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $roles = ['super_admin', 'admin', 'uploader', 'recipient'];

@@ -12,6 +12,12 @@ class ShieldSeeder extends Seeder
 {
     public function run(): void
     {
+        $roleModel = Utils::getRoleModel();
+        if ($roleModel::exists()) {
+            $this->command->info('Roles table is not empty. Shield seeding skipped.');
+            return;
+        }
+
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $tenants = '[]';

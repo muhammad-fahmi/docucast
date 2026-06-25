@@ -10,6 +10,11 @@ class DivisionSeeder extends Seeder
 {
     public function run(): void
     {
+        if (Division::exists()) {
+            $this->command->info('Division table is not empty. Division seeding skipped.');
+            return;
+        }
+
         $divisions = [
             'Warehouse Raw',
             'Warehouse Package',
